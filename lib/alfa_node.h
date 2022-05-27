@@ -16,10 +16,11 @@
 #include "alfa_msg/AlfaMetrics.h"
 #include "alfa_msg/AlfaAlivePing.h"
 
+#include "CompressedPointCloud.h"
 
-#define NODE_NAME "alfa_pd"
+#define NODE_NAME "alfa_pc_compression_node"
 
-#define NODE_TYPE "Weather denoising"
+#define NODE_TYPE "Compression"
 
 
 #define TIMER_SLEEP 50000
@@ -31,14 +32,16 @@ class AlfaNode
 public:
     AlfaNode();
 
-    void publish_pointcloud(pcl::PointCloud<pcl::PointXYZI>::Ptr output_cloud);
+    void publish_pointcloud(compressed_pointcloud_transport::CompressedPointCloud output_cloud);
     void publish_metrics(alfa_msg::AlfaMetrics &metrics);
 
-    virtual void process_pointcloud(pcl::PointCloud<pcl::PointXYZI>::Ptr output_cloud);
+    virtual void process_pointcloud(pcl::PointCloud<pcl::PointXYZRGB>::Ptr output_cloud, const sensor_msgs::PointCloud2ConstPtr& header);
     virtual alfa_msg::AlfaConfigure::Response   process_config(alfa_msg::AlfaConfigure::Request &req);
 
     int node_status;
     virtual ~AlfaNode();
+    uint pcl2_header_seq;
+    void spin();
 
 private:
 
@@ -47,7 +50,7 @@ private:
     ros::Subscriber sub_cloud;
     ros::ServiceServer sub_parameters;
     ros::NodeHandle nh;
-    pcl::PointCloud<pcl::PointXYZI>::Ptr pcloud;
+    pcl::PointCloud<pcl::PointXYZRGB>::Ptr pcloud;
     void init();
     void subscribe_topics();
     void ticker_thread();
@@ -57,8 +60,8 @@ private:
     ros::Publisher cloud_publisher;
 
     boost::thread* alive_ticker;
+    //void spin();
 
-    void spin();
 
 };
 

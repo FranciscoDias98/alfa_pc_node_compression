@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE QtCreatorProject>
-<!-- Written by QtCreator 4.9.2, 2022-05-23T07:18:28. -->
+<!-- Written by QtCreator 4.9.2, 2022-05-26T22:13:37. -->
 <qtcreator>
  <data>
   <variable>EnvironmentId</variable>
-  <value type="QByteArray">{a1721919-4e32-4979-b4cd-77eba3cd2ab6}</value>
+  <value type="QByteArray">{86254382-af8e-4479-bcee-32e0171e2338}</value>
  </data>
  <data>
   <variable>ProjectExplorer.Project.ActiveTarget</variable>
@@ -64,22 +64,17 @@
   <valuemap type="QVariantMap">
    <value type="QString" key="ProjectExplorer.ProjectConfiguration.DefaultDisplayName">Desktop</value>
    <value type="QString" key="ProjectExplorer.ProjectConfiguration.DisplayName">Desktop</value>
-   <value type="QString" key="ProjectExplorer.ProjectConfiguration.Id">{bfb7ccce-1aec-4d35-8405-ead6df9ba3d3}</value>
+   <value type="QString" key="ProjectExplorer.ProjectConfiguration.Id">{dbe4c319-9609-4845-bca9-21bc1d747910}</value>
    <value type="int" key="ProjectExplorer.Target.ActiveBuildConfiguration">0</value>
    <value type="int" key="ProjectExplorer.Target.ActiveDeployConfiguration">0</value>
    <value type="int" key="ProjectExplorer.Target.ActiveRunConfiguration">0</value>
    <valuemap type="QVariantMap" key="ProjectExplorer.Target.BuildConfiguration.0">
     <valuelist type="QVariantList" key="CMake.Configuration">
-     <value type="QString">unset CMAKE_BUILD_TYPE</value>
-     <value type="QString">unset CMAKE_CODEBLOCKS_EXECUTABLE</value>
-     <value type="QString">unset CMAKE_CODEBLOCKS_MAKE_ARGUMENTS</value>
      <value type="QString">CMAKE_CXX_COMPILER:STRING=%{Compiler:Executable:Cxx}</value>
      <value type="QString">CMAKE_C_COMPILER:STRING=%{Compiler:Executable:C}</value>
-     <value type="QString">unset CMAKE_INSTALL_PREFIX</value>
-     <value type="QString">unset CMAKE_PREFIX_PATH</value>
      <value type="QString">QT_QMAKE_EXECUTABLE:STRING=%{Qt:qmakeExecutable}</value>
     </valuelist>
-    <value type="QString" key="ProjectExplorer.BuildConfiguration.BuildDirectory">/home/andre/QtBuild/Alfa_Pd</value>
+    <value type="QString" key="ProjectExplorer.BuildConfiguration.BuildDirectory">/home/francisco98/build_alfa_pc_compression</value>
     <valuemap type="QVariantMap" key="ProjectExplorer.BuildConfiguration.BuildStepList.0">
      <valuemap type="QVariantMap" key="ProjectExplorer.BuildStepList.Step.0">
       <value type="QString" key="CMakeProjectManager.MakeStep.AdditionalArguments"></value>
@@ -123,7 +118,7 @@
     <valuelist type="QVariantList" key="CMake.Configuration">
      <value type="QString">CMAKE_BUILD_TYPE:STRING=Debug</value>
     </valuelist>
-    <value type="QString" key="ProjectExplorer.BuildConfiguration.BuildDirectory">/home/andre/catkin_ws/src/build-alfa_pd_node-Desktop-Debug</value>
+    <value type="QString" key="ProjectExplorer.BuildConfiguration.BuildDirectory">/home/francisco98/catkin_ws/src/build-alfa_pc_node_compression-Desktop-Debug</value>
     <valuemap type="QVariantMap" key="ProjectExplorer.BuildConfiguration.BuildStepList.0">
      <valuemap type="QVariantMap" key="ProjectExplorer.BuildStepList.Step.0">
       <value type="QString" key="CMakeProjectManager.MakeStep.AdditionalArguments"></value>
@@ -167,7 +162,7 @@
     <valuelist type="QVariantList" key="CMake.Configuration">
      <value type="QString">CMAKE_BUILD_TYPE:STRING=Release</value>
     </valuelist>
-    <value type="QString" key="ProjectExplorer.BuildConfiguration.BuildDirectory">/home/andre/catkin_ws/src/build-alfa_pd_node-Desktop-Release</value>
+    <value type="QString" key="ProjectExplorer.BuildConfiguration.BuildDirectory">/home/francisco98/catkin_ws/src/build-alfa_pc_node_compression-Desktop-Release</value>
     <valuemap type="QVariantMap" key="ProjectExplorer.BuildConfiguration.BuildStepList.0">
      <valuemap type="QVariantMap" key="ProjectExplorer.BuildStepList.Step.0">
       <value type="QString" key="CMakeProjectManager.MakeStep.AdditionalArguments"></value>
@@ -211,7 +206,7 @@
     <valuelist type="QVariantList" key="CMake.Configuration">
      <value type="QString">CMAKE_BUILD_TYPE:STRING=RelWithDebInfo</value>
     </valuelist>
-    <value type="QString" key="ProjectExplorer.BuildConfiguration.BuildDirectory">/home/andre/catkin_ws/src/build-alfa_pd_node-Desktop-Release-with-Debug-Information</value>
+    <value type="QString" key="ProjectExplorer.BuildConfiguration.BuildDirectory">/home/francisco98/catkin_ws/src/build-alfa_pc_node_compression-Desktop-Release-with-Debug-Information</value>
     <valuemap type="QVariantMap" key="ProjectExplorer.BuildConfiguration.BuildStepList.0">
      <valuemap type="QVariantMap" key="ProjectExplorer.BuildStepList.Step.0">
       <value type="QString" key="CMakeProjectManager.MakeStep.AdditionalArguments"></value>
@@ -255,7 +250,7 @@
     <valuelist type="QVariantList" key="CMake.Configuration">
      <value type="QString">CMAKE_BUILD_TYPE:STRING=MinSizeRel</value>
     </valuelist>
-    <value type="QString" key="ProjectExplorer.BuildConfiguration.BuildDirectory">/home/andre/catkin_ws/src/build-alfa_pd_node-Desktop-Minimum-Size-Release</value>
+    <value type="QString" key="ProjectExplorer.BuildConfiguration.BuildDirectory">/home/francisco98/catkin_ws/src/build-alfa_pc_node_compression-Desktop-Minimum-Size-Release</value>
     <valuemap type="QVariantMap" key="ProjectExplorer.BuildConfiguration.BuildStepList.0">
      <valuemap type="QVariantMap" key="ProjectExplorer.BuildStepList.Step.0">
       <value type="QString" key="CMakeProjectManager.MakeStep.AdditionalArguments"></value>
@@ -363,9 +358,9 @@
     <value type="int" key="PE.EnvironmentAspect.Base">2</value>
     <valuelist type="QVariantList" key="PE.EnvironmentAspect.Changes"/>
     <value type="QString" key="ProjectExplorer.ProjectConfiguration.DefaultDisplayName"></value>
-    <value type="QString" key="ProjectExplorer.ProjectConfiguration.DisplayName">alfa_pd</value>
-    <value type="QString" key="ProjectExplorer.ProjectConfiguration.Id">CMakeProjectManager.CMakeRunConfiguration.alfa_pd
-/home/andre/catkin_ws/src/alfa_pd_node/</value>
+    <value type="QString" key="ProjectExplorer.ProjectConfiguration.DisplayName">alfa_pc_compression</value>
+    <value type="QString" key="ProjectExplorer.ProjectConfiguration.Id">CMakeProjectManager.CMakeRunConfiguration.alfa_pc_compression
+/home/francisco98/catkin_ws/src/alfa_pc_node_compression/devel/lib/alfa_pc_compression/</value>
     <value type="QString" key="RunConfiguration.Arguments"></value>
     <value type="uint" key="RunConfiguration.QmlDebugServerPort">3768</value>
     <value type="bool" key="RunConfiguration.UseCppDebugger">false</value>
@@ -374,7 +369,7 @@
     <value type="bool" key="RunConfiguration.UseQmlDebugger">false</value>
     <value type="bool" key="RunConfiguration.UseQmlDebuggerAuto">true</value>
     <value type="QString" key="RunConfiguration.WorkingDirectory"></value>
-    <value type="QString" key="RunConfiguration.WorkingDirectory.default">/home/andre/QtBuild/Alfa_Pd/devel/lib/alfa_pd</value>
+    <value type="QString" key="RunConfiguration.WorkingDirectory.default">/home/francisco98/build_alfa_pc_compression/devel/lib/alfa_pc_compression</value>
    </valuemap>
    <value type="int" key="ProjectExplorer.Target.RunConfigurationCount">1</value>
   </valuemap>

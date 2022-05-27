@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.5)
-project(alfa_pd)
+project(alfa_pc_compression)
 #if (NOT "${CMAKE_CXX_STANDARD_COMPUTED_DEFAULT}")
 #  message(STATUS "Changing CXX_STANDARD from C++98 to C++11")
 #  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
@@ -86,19 +86,19 @@ catkin_package(
 add_definitions(${PCL_DEFINITIONS})
 
 set(project_SOURCES main.cpp
-    src/alfa_node.cpp src/alfa_pd.cpp
-    lib/alfa_node.h lib/alfa_pd.h
+    src/alfa_node.cpp src/compressor.cpp
+    lib/alfa_node.h lib/compressor.h lib/CompressedPointCloud.h
     )
 
-add_executable(alfa_pd ${project_SOURCES})
+add_executable(${PROJECT_NAME} ${project_SOURCES})
 
 target_link_libraries(${PROJECT_NAME} ${Boost_LIBRARIES} ${catkin_LIBRARIES} ${PCL_LIBRARIES})
 
-install(TARGETS alfa_pd
+install(TARGETS ${PROJECT_NAME}
     ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
     LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
     RUNTIME DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}
 )
-install(TARGETS alfa_pd
+install(TARGETS ${PROJECT_NAME}
    DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}
 )

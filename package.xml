@@ -1,8 +1,8 @@
 <?xml version="1.0"?>
 <package>
-  <name>alfa_pd</name>
+  <name>alfa_pc_compression</name>
   <version>0.0.0</version>
-  <description>alfa_pd</description>
+  <description>alfa_pc_compression</description>
 
   <!-- One maintainer tag required, multiple allowed, one person per tag --> 
   <!-- Example:  -->
