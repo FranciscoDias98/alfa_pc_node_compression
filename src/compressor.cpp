@@ -1,0 +1,389 @@
+#include "compressor.h"
+#include "CompressedPointCloud.h"
+#include "octree_pointcloud_compression_2.h"
+#include <chrono>
+#include <time.h>
+#include <string>
+
+// testes tempos
+unsigned int x = 0;
+unsigned long tempos = 0;
+float size_compressed =0;
+float size_original =0;
+
+pcl::io::OctreePointCloudCompression<pcl::PointXYZRGB>* PointCloudEncoder;
+pcl::io::OctreePointCloudCompression<pcl::PointXYZRGB>* PointCloudEncoder1;
+
+
+
+
+Alfa_Pc_Compress::Alfa_Pc_Compress()
+{
+    std::cout << "entrei no construtor" << std::endl;
+
+    in_cloud.reset(new pcl::PointCloud<pcl::PointXYZRGB>);
+    out_cloud.reset(new pcl::PointCloud<pcl::PointXYZRGB>);
+
+    cluster1.reset(new pcl::PointCloud<pcl::PointXYZRGB>);
+    cluster2.reset(new pcl::PointCloud<pcl::PointXYZRGB>);
+
+    compressed_data_vector.clear();
+
+    set_compression_profile(); // define compression profile
+    spin();
+}
+
+void Alfa_Pc_Compress::set_compression_profile()
+{
+    std::cout << "Setting Compression Profile" << std::endl;
+
+
+    compression_profile = pcl::io::MANUAL_CONFIGURATION;
+
+    show_statistics = true;
+    compression_profile_.pointResolution = 0.01; //
+    compression_profile_.octreeResolution = 0.05; //-----> ALTERAR NESTE!!!!!!!!! voxel size in cubic meters (1m is 0.01 cm)
+    compression_profile_.doVoxelGridDownSampling = true;
+    compression_profile_.iFrameRate = 10; // number of prediction frames
+    compression_profile_.colorBitResolution = 0;
+    compression_profile_.doColorEncoding = false;
+
+    PointCloudEncoder = new pcl::io::OctreePointCloudCompression<pcl::PointXYZRGB>(compression_profile,
+                        show_statistics,
+                        compression_profile_.pointResolution,
+                        compression_profile_.octreeResolution,
+                        compression_profile_.doVoxelGridDownSampling,
+                        compression_profile_.iFrameRate,
+                        compression_profile_.doColorEncoding,
+                        compression_profile_.colorBitResolution);
+
+
+    output_metrics.message_tag = "Compression performance";
+}
+
+void Alfa_Pc_Compress::process_pointcloud(pcl::PointCloud<pcl::PointXYZRGB>::Ptr output_cloud, const sensor_msgs::PointCloud2ConstPtr& header)
+{
+    output_metrics.metrics.clear();
+
+    std::stringstream compressed_data;
+    std::stringstream compressed_data2;
+
+    ROS_INFO("Compressing cloud with frame [%s]\n", output_cloud->header.frame_id.c_str());
+    ROS_INFO("Compressing cloud with frame [%d]\n", output_cloud->header.seq);
+
+
+    // compress
+    auto start = high_resolution_clock::now();
+    //do_Compression(output_cloud);
+    PointCloudEncoder->encodePointCloud_2(output_cloud,compressed_data);
+    auto stop = high_resolution_clock::now();
+    auto duration = duration_cast<milliseconds>(stop - start);
+    std::cout << "Fiz Compressao" << std::endl;
+
+
+    ROS_INFO("Compressing in %ld ms",duration.count());
+
+    // push metrics to monitor
+    metrics(compressed_data,output_cloud,duration.count());
+
+
+    // create object to hold the compressed data
+    //compressed_pointcloud_transport::CompressedPointCloud output_compressed;
+    output_compressed.header = header->header;
+    output_compressed.data = compressed_data.str();
+
+
+    // pub compressed data
+    publish_pointcloud(output_compressed);
+    publish_metrics(output_metrics);
+}
+
+
+
+void Alfa_Pc_Compress::run_worker(int thread_number)
+{
+    std::cout << "THREAD: " << thread_number << std::endl;
+    std::cout << "Cloud Size: " << pcloud->size()<< std::endl;
+
+    std::stringstream compressed_data;
+    std::stringstream compressed_data1;
+
+    for(int i = (pcloud->size()/number_threads)*thread_number;i<= (pcloud->size()/number_threads)*(thread_number+1);i++)
+    {
+        pcl::PointXYZRGB point = (*pcloud)[i];
+//        mutex_cluster.lock();
+//        //push point to cluster
+        if(thread_number == 0)
+        {
+            mutex_cluster.lock();
+            cluster1->push_back(point);
+            mutex_cluster.unlock();
+
+
+        }else if (thread_number == 1)
+        {
+            mutex_cluster.lock();
+            cluster2->push_back(point);
+            mutex_cluster.unlock();
+        }
+
+//        mutex_cluster.unlock();
+    }
+
+//    // vai ter de ser array de encoders
+//    //PointCloudEncoder->encodePointCloud(clusters[thread_number],compressed_data_vector[thread_number]);
+//    std::cout << "Fiz cluster: " << std::endl;
+
+//    mutex_encoder.lock();
+//    encoder_vector[thread_number]->encodePointCloud_2(clusters[thread_number],compressed_data_vector[thread_number]);
+//    mutex_encoder.unlock();
+
+//    mutex_compressed_data.lock();
+//    output_compressed.data += compressed_data_vector[thread_number].str();
+//    mutex_compressed_data.unlock();
+
+    if(thread_number == 0)
+    {
+        PointCloudEncoder->encodePointCloud_2(cluster1,compressed_data);
+        std::cout << "Fiz compressao encoder 0" << std::endl;
+
+        mutex_compressed_data.lock();
+        output_compressed.data += compressed_data.str();
+        mutex_compressed_data.unlock();
+
+    }
+    if(thread_number == 1)
+    {
+
+        PointCloudEncoder1->encodePointCloud_2(cluster2,compressed_data1);
+        std::cout << "Fiz compressao encoder 1" << std::endl;
+
+        mutex_compressed_data.lock();
+        output_compressed.data += compressed_data1.str();
+        mutex_compressed_data.unlock();
+
+    }
+
+
+}
+
+
+
+
+
+alfa_msg::AlfaConfigure::Response Alfa_Pc_Compress::process_config(alfa_msg::AlfaConfigure::Request &req)
+{
+    update_compressionSettings(req);
+    alfa_msg::AlfaConfigure::Response response;
+    response.return_status = 1;
+    return response;
+
+}
+
+
+
+
+void Alfa_Pc_Compress::metrics(std::stringstream& compressed_data, pcl::PointCloud<pcl::PointXYZRGB>::Ptr output_cloud, double duration)
+{
+    compressed_data.seekg(0,ios::end);
+    size_compressed = compressed_data.tellg();
+
+    size_original = (static_cast<float> (output_cloud->points.size()) * (sizeof (int) + 3.0f * sizeof (float)) / 1024.0f)*1000;
+
+
+    ROS_INFO("Tree depth: %d\n",PointCloudEncoder->getTreeDepth());
+
+    // alfa metrics
+    alfa_msg::MetricMessage new_message;
+
+    new_message.metric = size_original/1000;
+    new_message.units = "kB";
+    new_message.metric_name = "Original Size";
+    output_metrics.metrics.push_back(new_message);
+
+    new_message.metric = output_cloud->size();
+    new_message.units = "";
+    new_message.metric_name = "Nº of Points in Point Cloud";
+    output_metrics.metrics.push_back(new_message);
+
+
+    new_message.metric = duration;
+    new_message.units = "ms";
+    new_message.metric_name = "Total processing time";
+    output_metrics.metrics.push_back(new_message);
+
+    new_message.metric = size_compressed/1000;
+    new_message.units = "kB";
+    new_message.metric_name = "Compressed Size";
+    output_metrics.metrics.push_back(new_message);
+
+    new_message.metric = size_original/size_compressed;
+    new_message.units = "";
+    new_message.metric_name = "Compression Ratio";
+    output_metrics.metrics.push_back(new_message);
+
+    new_message.metric = PointCloudEncoder->getTreeDepth();
+    new_message.units = "";
+    new_message.metric_name = "Octree Depth";
+    output_metrics.metrics.push_back(new_message);
+
+}
+
+void Alfa_Pc_Compress::update_compressionSettings(const alfa_msg::AlfaConfigure::Request configs)
+{
+    //compression_profile_.octreeResolution = configs.configurations[0].config;
+    PointCloudEncoder->setResolution(configs.configurations[0].config);
+    //delete(PointCloudEncoder);
+}
+
+
+
+
+void Alfa_Pc_Compress::exe_time()
+{
+    tempos = tempos/100 ;
+    size_compressed = size_compressed/100;
+    size_original = (size_original*1000)/100;
+    std::ofstream myFile("./output/exe_time");
+    myFile<< "Exe. Time: "<< tempos << std::endl << "Point Cloud Size: "<< size_original << std::endl << "Compressed Size: "<<size_compressed<< std::endl << "Ratio: " << size_original/size_compressed << std::endl ;
+    myFile.close();
+    std::cout << "-----------Acabei------------------------------------------------------------- " ;
+    x=0;
+    size_compressed = 0;
+    size_original = 0;
+}
+
+
+void Alfa_Pc_Compress::do_Compression(pcl::PointCloud<pcl::PointXYZRGB>::Ptr in_cloud)
+{
+
+    using namespace std::chrono;
+
+    std::stringstream compressed_data_;
+
+    ROS_INFO("Compressing cloud with frame [%s]", in_cloud->header.frame_id.c_str());
+    this->in_cloud = in_cloud;
+
+    auto start = high_resolution_clock::now();
+
+    //compress point cloud
+    //point_cloud_encoder->setInputCloud(in_cloud);
+    point_cloud_encoder->encodePointCloud(in_cloud,compressed_data_);
+    auto stop = high_resolution_clock::now();
+    auto duration = duration_cast<milliseconds>(stop - start);
+    ROS_INFO("Compressing in %ld ms",duration.count());
+    ROS_INFO("Tree depth: %d\n",point_cloud_encoder->getTreeDepth());
+
+    // testes tempos
+    tempos = tempos + duration.count();
+    compressed_data_.seekg(0,ios::end);
+    size_compressed = size_compressed + compressed_data_.tellg();
+    size_original = size_original + static_cast<float> (in_cloud->size()) * (sizeof (int) + 3.0f * sizeof (float)) / 1024.0f;
+    x++;
+    //test
+    if(x==100){
+      exe_time();
+    }
+}
+//void Alfa_Pc_Compress::cloud_cb(const sensor_msgs::PointCloud2ConstPtr &input_cloud)
+//{
+
+//    if((input_cloud->width * input_cloud->height) == 0)
+//        return; //return if the cloud is not dense
+
+//    // convert from sensor_msg::PointCloud2 to pcl::PointCloud<PointXYZI> for the encoder
+//    try
+//    {
+//        pcl::fromROSMsg(*input_cloud, *in_cloud);
+//    }
+//    catch (std::runtime_error e)
+//    {
+//        ROS_ERROR_STREAM("Error in converting ros cloud to pcl cloud: " << e.what());
+//    }
+
+//    //do_Compression(in_cloud);
+//    point_cloud_encoder->encodePointCloud(in_cloud,compressed_data);
+
+//    compressed_pointcloud_transport::CompressedPointCloud output_compressed;
+//    output_compressed.header= input_cloud->header;
+//    output_compressed.data = compressed_data.str();
+
+//    // Publish the data.
+//    std::cout << "Publishing data" << std::endl;
+//    pub.publish(output_compressed); // --------- > Nao publica direito Pq ?????
+//    std::cout << "Data published" << std::endl;
+
+//}
+
+
+
+//void Alfa_Pc_Compress::process_pointcloud(pcl::PointCloud<pcl::PointXYZRGB>::Ptr output_cloud, const sensor_msgs::PointCloud2ConstPtr& header)
+//{
+//    output_metrics.metrics.clear();
+//    mutex_cluster.lock();
+//    cluster1->clear();
+//    cluster2->clear();
+//    mutex_cluster.unlock();
+
+//    if(multi_thread)
+//    {
+//        if(thread_list.size()>1)
+//        {
+//            for (int i =0;i < thread_list.size();i++)
+//            {
+//                thread_list[i]->join();
+//            }
+
+//            thread_list.clear();
+//        }
+
+//        if (number_threads >1)
+//        {
+//            thread_list.clear();
+//            for (int i =0;i < number_threads;i++)
+//            {
+//                thread_list.push_back(new boost::thread(&Alfa_Pc_Compress::run_worker, this,i));
+//            }
+//            for (int i =0;i < number_threads;i++)
+//            {
+//                thread_list[i]->join();
+//            }
+//        }
+
+//    }else{
+
+//    std::stringstream compressed_data;
+//    std::stringstream compressed_data2;
+
+//    ROS_INFO("Compressing cloud with frame [%s]\n", output_cloud->header.frame_id.c_str());
+//    ROS_INFO("Compressing cloud with frame [%d]\n", output_cloud->header.seq);
+
+
+//    // compress
+//    auto start = high_resolution_clock::now();
+//    //do_Compression(output_cloud);
+//    PointCloudEncoder->encodePointCloud_2(output_cloud,compressed_data);
+//    auto stop = high_resolution_clock::now();
+//    auto duration = duration_cast<milliseconds>(stop - start);
+//    std::cout << "Fiz Compressao" << std::endl;
+
+
+//    ROS_INFO("Compressing in %ld ms",duration.count());
+
+//    // push metrics to monitor
+//    metrics(compressed_data,output_cloud,duration.count());
+
+
+//    // create object to hold the compressed data
+//    //compressed_pointcloud_transport::CompressedPointCloud output_compressed;
+//    output_compressed.header = header->header;
+//    output_compressed.data = compressed_data.str();
+
+//    }
+//    // pub compressed data
+//    //metrics(compressed_data,output_cloud,duration.count());
+//    output_compressed.header = header->header;
+//    publish_pointcloud(output_compressed);
+//    publish_metrics(output_metrics);
+//}
+
