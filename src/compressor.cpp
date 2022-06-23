@@ -266,8 +266,12 @@ void Alfa_Pc_Compress::exe_time()
     //std::ofstream myFile("./output/exe_time");
     //myFile<< "Exe. Time: "<< tempos_test << std::endl << "Point Cloud Size: "<< size_original_test << std::endl << "Compressed Size: "<<size_compressed_test<< std::endl << "Ratio: " << size_original_test/size_compressed_test << std::endl ;
     //myFile.close();
-    std::cout << "-----------Acabei------------------------------------------------------------- \n" ;
-    std::cout << "Exe. Time: "<< tempos_test << std::endl << "Point Cloud Size: "<< size_original_test << std::endl << "Compressed Size: "<<size_compressed_test<< std::endl << "Ratio: " << size_original_test/size_compressed_test << std::endl ;
+    PCL_INFO ("-----------Acabei------------------------------------------------------------- \n");
+    PCL_INFO ("Time: %d\n", tempos_test);
+    PCL_INFO ("Point Cloud Size: %f\n", size_original_test);
+    PCL_INFO ("Compressed Size: %f\n", size_compressed_test);
+    PCL_INFO ("Ratio: %f\n", size_original_test/size_compressed_test);
+
     x=0;
     size_compressed_test = 0;
     size_original_test = 0;
