@@ -11,6 +11,10 @@ unsigned long tempos = 0;
 float size_compressed =0;
 float size_original =0;
 
+unsigned long tempos_test = 0;
+float size_compressed_test =0;
+float size_original_test =0;
+
 pcl::io::OctreePointCloudCompression<pcl::PointXYZRGB>* PointCloudEncoder;
 pcl::io::OctreePointCloudCompression<pcl::PointXYZRGB>* PointCloudEncoder1;
 
@@ -80,6 +84,16 @@ void Alfa_Pc_Compress::process_pointcloud(pcl::PointCloud<pcl::PointXYZRGB>::Ptr
     auto duration = duration_cast<milliseconds>(stop - start);
     std::cout << "Fiz Compressao" << std::endl;
 
+    size_original_test = size_original_test + (static_cast<float> (output_cloud->points.size()) * (sizeof (int) + 3.0f * sizeof (float)) / 1024.0f)*1000;
+    x++;
+    compressed_data.seekg(0,ios::end);
+    size_compressed_test = size_compressed_test+compressed_data.tellg();
+    tempos_test = tempos_test + duration.count();
+
+    if(x==100){
+        x=0;
+        exe_time();
+    }
 
     ROS_INFO("Compressing in %ld ms",duration.count());
 
@@ -91,6 +105,8 @@ void Alfa_Pc_Compress::process_pointcloud(pcl::PointCloud<pcl::PointXYZRGB>::Ptr
     //compressed_pointcloud_transport::CompressedPointCloud output_compressed;
     output_compressed.header = header->header;
     output_compressed.data = compressed_data.str();
+
+
 
 
     // pub compressed data
@@ -188,6 +204,7 @@ void Alfa_Pc_Compress::metrics(std::stringstream& compressed_data, pcl::PointClo
     compressed_data.seekg(0,ios::end);
     size_compressed = compressed_data.tellg();
 
+
     size_original = (static_cast<float> (output_cloud->points.size()) * (sizeof (int) + 3.0f * sizeof (float)) / 1024.0f)*1000;
 
 
@@ -227,7 +244,7 @@ void Alfa_Pc_Compress::metrics(std::stringstream& compressed_data, pcl::PointClo
     new_message.metric_name = "Octree Depth";
     output_metrics.metrics.push_back(new_message);
 
-    exe_time();
+
 
 }
 
@@ -243,17 +260,17 @@ void Alfa_Pc_Compress::update_compressionSettings(const alfa_msg::AlfaConfigure:
 
 void Alfa_Pc_Compress::exe_time()
 {
-    tempos = tempos/100 ;
-    size_compressed = size_compressed/100;
-    size_original = (size_original*1000)/100;
+    tempos_test = tempos_test/100 ;
+    size_compressed_test = size_compressed_test/100;
+    size_original_test = (size_original_test)/100;
     std::ofstream myFile("./output/exe_time");
-    myFile<< "Exe. Time: "<< tempos << std::endl << "Point Cloud Size: "<< size_original << std::endl << "Compressed Size: "<<size_compressed<< std::endl << "Ratio: " << size_original/size_compressed << std::endl ;
+    myFile<< "Exe. Time: "<< tempos_test << std::endl << "Point Cloud Size: "<< size_original_test << std::endl << "Compressed Size: "<<size_compressed_test<< std::endl << "Ratio: " << size_original_test/size_compressed_test << std::endl ;
     myFile.close();
-    std::cout << "-----------Acabei------------------------------------------------------------- " ;
-    std::cout << "Exe. Time: "<< tempos << std::endl << "Point Cloud Size: "<< size_original << std::endl << "Compressed Size: "<<size_compressed<< std::endl << "Ratio: " << size_original/size_compressed << std::endl ;
+    std::cout << "-----------Acabei------------------------------------------------------------- \n" ;
+    std::cout << "Exe. Time: "<< tempos_test << std::endl << "Point Cloud Size: "<< size_original_test << std::endl << "Compressed Size: "<<size_compressed_test<< std::endl << "Ratio: " << size_original_test/size_compressed_test << std::endl ;
     x=0;
-    size_compressed = 0;
-    size_original = 0;
+    size_compressed_test = 0;
+    size_original_test = 0;
 }
 
 
