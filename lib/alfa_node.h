@@ -42,6 +42,7 @@ public:
     virtual ~AlfaNode();
     uint pcl2_header_seq;
     void spin();
+    pcl::PointCloud<pcl::PointXYZRGB>::Ptr pcloud;
 
 private:
 
@@ -50,7 +51,7 @@ private:
     ros::Subscriber sub_cloud;
     ros::ServiceServer sub_parameters;
     ros::NodeHandle nh;
-    pcl::PointCloud<pcl::PointXYZRGB>::Ptr pcloud;
+
     void init();
     void subscribe_topics();
     void ticker_thread();
@@ -60,7 +61,7 @@ private:
     ros::Publisher cloud_publisher;
 
     boost::thread* alive_ticker;
-    //void spin();
+
 
 
 };

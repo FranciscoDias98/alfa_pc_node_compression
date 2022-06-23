@@ -16,7 +16,7 @@ AlfaNode::AlfaNode()
 void AlfaNode::publish_pointcloud(compressed_pointcloud_transport::CompressedPointCloud pcl2_frame)
 {
 
-    cout << pcl2_frame.header << endl;
+//    cout << pcl2_frame.header << endl;
     cloud_publisher.publish(pcl2_frame);
     cout << "Published compressed point cloud"<<endl;
 
@@ -58,6 +58,10 @@ void AlfaNode::cloud_cb(const sensor_msgs::PointCloud2ConstPtr &cloud)
     {
         ROS_ERROR_STREAM("Error in converting ros cloud to pcl cloud: " << e.what());
     }
+
+    std::cout << "Recebi cloud" << std::endl;
+
+    std::cout << (static_cast<float> (pcloud->size()) * (sizeof (int) + 3.0f * sizeof (float)) / 1024.0f) << std::endl;
 
     process_pointcloud(pcloud,cloud);
 
