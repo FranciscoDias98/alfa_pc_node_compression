@@ -227,6 +227,8 @@ void Alfa_Pc_Compress::metrics(std::stringstream& compressed_data, pcl::PointClo
     new_message.metric_name = "Octree Depth";
     output_metrics.metrics.push_back(new_message);
 
+    exe_time();
+
 }
 
 void Alfa_Pc_Compress::update_compressionSettings(const alfa_msg::AlfaConfigure::Request configs)
@@ -248,6 +250,7 @@ void Alfa_Pc_Compress::exe_time()
     myFile<< "Exe. Time: "<< tempos << std::endl << "Point Cloud Size: "<< size_original << std::endl << "Compressed Size: "<<size_compressed<< std::endl << "Ratio: " << size_original/size_compressed << std::endl ;
     myFile.close();
     std::cout << "-----------Acabei------------------------------------------------------------- " ;
+    std::cout << "Exe. Time: "<< tempos << std::endl << "Point Cloud Size: "<< size_original << std::endl << "Compressed Size: "<<size_compressed<< std::endl << "Ratio: " << size_original/size_compressed << std::endl ;
     x=0;
     size_compressed = 0;
     size_original = 0;

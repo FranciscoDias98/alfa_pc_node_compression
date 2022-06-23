@@ -59,7 +59,7 @@ void AlfaNode::cloud_cb(const sensor_msgs::PointCloud2ConstPtr &cloud)
         ROS_ERROR_STREAM("Error in converting ros cloud to pcl cloud: " << e.what());
     }
 
-
+    std::cout << "Recebi cloud" << std::endl;
 
     std::cout << (static_cast<float> (pcloud->size()) * (sizeof (int) + 3.0f * sizeof (float)) / 1024.0f) << std::endl;
 
