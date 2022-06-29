@@ -3,6 +3,10 @@
 #include <unistd.h>
 #include <chrono>
 
+pcl::PointCloud<pcl::PointXYZI>::Ptr cloud_test(new pcl::PointCloud<pcl::PointXYZI>);
+#define RES_MULTIPLIER 10
+#define INTENSITY_MULTIPLIER 1000
+
 
 AlfaNode::AlfaNode()
 {
@@ -46,6 +50,13 @@ AlfaNode::~AlfaNode()
 void AlfaNode::cloud_cb(const sensor_msgs::PointCloud2ConstPtr &cloud)
 {
 
+    std::vector<char> vec;
+    std::vector<float> vecx;
+    std::vector<float> vecy;
+    std::vector<float> vecz;
+    int i=0;
+    int j=0;
+
     if((cloud->width * cloud->height) == 0)
         return; //return if the cloud is not dense
 
@@ -53,6 +64,7 @@ void AlfaNode::cloud_cb(const sensor_msgs::PointCloud2ConstPtr &cloud)
     try
     {
         pcl::fromROSMsg(*cloud, *pcloud);
+        //pcl::fromROSMsg(*cloud, *cloud_test);
     }
     catch (std::runtime_error e)
     {
@@ -63,7 +75,9 @@ void AlfaNode::cloud_cb(const sensor_msgs::PointCloud2ConstPtr &cloud)
 
     std::cout << (static_cast<float> (pcloud->size()) * (sizeof (int) + 3.0f * sizeof (float)) / 1024.0f) << std::endl;
 
-    process_pointcloud(pcloud,cloud);
+
+
+   process_pointcloud(pcloud,cloud);
 
 
 }
@@ -155,7 +169,77 @@ void AlfaNode::spin()
 
 
 
+//    for (auto point : cloud_test->points) {
+//        std::cout << point._PointXYZI::intensity << std::endl;
+//        vec.push_back(point._PointXYZI::intensity);
+//        vecx.push_back(point._PointXYZI::x);
+//        vecy.push_back(point._PointXYZI::y);
+//        vecz.push_back(point._PointXYZI::z);
+//    }
 
 
 
+//    for(auto point: pcloud->points){
+//        std::cout << "----------------------------------" <<vec[j] <<  std::endl;
+//        point._PointXYZRGB::r = vec[j];
+//        point._PointXYZRGB::x = vecx[j];
+//        point._PointXYZRGB::y = vecy[j];
+//        point._PointXYZRGB::z = vecz[j];
+//        j++;
+//    }
 
+//   pcloud->header = cloud_test->header;
+
+void AlfaNode::store_pointcloud_hardware(pcl::PointCloud<pcl::PointXYZI>::Ptr input_cloud, u64 *pointer)
+{
+    int pointcloud_index = 0;
+    int16_t a16_points[4];
+    for (auto point :*input_cloud) {
+        a16_points[0] = point.x*RES_MULTIPLIER;
+        a16_points[1] = point.y*RES_MULTIPLIER;
+        a16_points[2] = point.z*RES_MULTIPLIER;
+        a16_points[3] = point.intensity*INTENSITY_MULTIPLIER;
+        memcpy((void*)(pointer+pointcloud_index),a16_points,sizeof(int16_t)*4);
+        pointcloud_index++;
+    }
+}
+
+pcl::PointCloud<pcl::PointXYZI>::Ptr AlfaNode::read_hardware_pointcloud(u64 *pointer, uint size)
+{
+    pcl::PointCloud<pcl::PointXYZI>::Ptr return_cloud;
+    return_cloud.reset(new pcl::PointCloud<pcl::PointXYZI>);
+    for (uint i=0; i<size;i++) {
+        pcl::PointXYZI p;
+        int16_t a16_points[4];
+        memcpy((void*)(a16_points), pointer+i,sizeof(int16_t)*4);
+        p.x = (a16_points[0])/float(RES_MULTIPLIER);
+        p.y = (a16_points[1])/float(RES_MULTIPLIER);
+        p.z = (a16_points[2])/float(RES_MULTIPLIER);
+        p.intensity = (a16_points[3])/float(INTENSITY_MULTIPLIER);
+        return_cloud->push_back(p);
+        #ifdef DEBUG
+
+        cout<< "First bits: "<< hex<< a16_points[0]<< " Secound bits: "<< hex<< a16_points[1]<<endl;
+        cout << "Obtained coordinate: X:"<< hex<< p.x<< "; Y: "<<hex <<p.y<< "; Z: "<<hex<<p.z<< "; Intensity: "<<p.intensity<<endl;
+        #endif
+
+    }
+    return return_cloud;
+}
+
+vector<uint32_t> AlfaNode::read_hardware_registers(uint32_t *pointer, uint size)
+{
+    vector<uint32_t> return_vector;
+    for (uint var = 0; var < size; ++var) {
+        return_vector.push_back(pointer[var]);
+    }
+    return return_vector;
+}
+
+void AlfaNode::write_hardware_registers(vector<uint32_t> data, uint32_t *pointer, uint offset)
+{
+    for(uint i = offset; i <data.size(); i++)
+    {
+        pointer[i] = data[i];
+    }
+}

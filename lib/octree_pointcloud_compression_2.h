@@ -58,7 +58,9 @@
 #include <iostream>
 #include <stdio.h>
 #include <string.h>
-
+#include <chrono>
+#include <time.h>
+#include <ros/ros.h>
 //xxxxx
 
 using namespace pcl::octree;
@@ -224,8 +226,12 @@ namespace pcl
                     static_cast<unsigned char> (this->getTreeDepth ());
             
             // initialize octree
+            auto start = std::chrono::high_resolution_clock::now();
+           
             this->setInputCloud (cloud_arg);
-            
+            auto stop = std::chrono::high_resolution_clock::now();
+            auto duration = std::chrono::duration_cast<chrono::milliseconds>(stop - start);
+            ROS_INFO("Serialize Time: %ld", duration.count() );
             // add point to octree
             this->addPointsFromInputCloud ();
             
@@ -285,17 +291,24 @@ namespace pcl
                 if (i_frame_)
                     // i-frame encoding - encode tree structure without referencing previous buffer
                     this->serializeTree (binary_tree_data_vector_, false);
-                else
+                else{
+                    auto start = std::chrono::high_resolution_clock::now();
                     // p-frame encoding - XOR encoded tree structure
                     this->serializeTree (binary_tree_data_vector_, true);
-                
+                    auto stop = std::chrono::high_resolution_clock::now();
+                    auto duration = std::chrono::duration_cast<chrono::milliseconds>(stop - start);
+                    ROS_INFO("Serialize Time: %ld", duration.count() );
+                }
                 
                 // write frame header information to stream
                 this->writeFrameHeader (compressed_tree_data_out_arg);
                 
+                auto start = std::chrono::high_resolution_clock::now();
                 // apply entropy coding to the content of all data vectors and send data to output stream
                 this->entropyEncoding (compressed_tree_data_out_arg);
-                
+                auto stop = std::chrono::high_resolution_clock::now();
+                auto duration = std::chrono::duration_cast<chrono::milliseconds>(stop - start);
+                ROS_INFO("Entropy Encoding Time: %ld", duration.count() );
                 // prepare for next frame
                 this->switchBuffers ();
                 
