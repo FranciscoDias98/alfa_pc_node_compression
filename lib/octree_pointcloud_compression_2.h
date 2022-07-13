@@ -61,6 +61,10 @@
 #include <chrono>
 #include <time.h>
 #include <ros/ros.h>
+
+
+#include <fstream>
+
 //xxxxx
 
 using namespace pcl::octree;
@@ -231,7 +235,7 @@ namespace pcl
             this->setInputCloud (cloud_arg);
             auto stop = std::chrono::high_resolution_clock::now();
             auto duration = std::chrono::duration_cast<chrono::milliseconds>(stop - start);
-            ROS_INFO("Serialize Time: %ld", duration.count() );
+            ROS_INFO("Initialize Octree Time: %ld", duration.count() );
             // add point to octree
             this->addPointsFromInputCloud ();
             
@@ -297,7 +301,17 @@ namespace pcl
                     this->serializeTree (binary_tree_data_vector_, true);
                     auto stop = std::chrono::high_resolution_clock::now();
                     auto duration = std::chrono::duration_cast<chrono::milliseconds>(stop - start);
-                    ROS_INFO("Serialize Time: %ld", duration.count() );
+
+                    ROS_INFO("Serialize Time: %ld", duration.count());
+                    ROS_INFO("Vector size: %d", binary_tree_data_vector_.size());
+                    ROS_INFO("Octree serilizes size: %ld bytes", sizeof(binary_tree_data_vector_[0])*binary_tree_data_vector_.size());
+                }
+
+
+                fstream file;
+                file.open("octree_serial.bin",ios_base::out | ios::binary);
+                for (int i = 0;i<binary_tree_data_vector_.size();i++) {
+                    file << binary_tree_data_vector_[i] << std::endl;
                 }
                 
                 // write frame header information to stream

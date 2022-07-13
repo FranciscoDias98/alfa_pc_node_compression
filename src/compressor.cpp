@@ -35,6 +35,38 @@ Alfa_Pc_Compress::Alfa_Pc_Compress()
 
     set_compression_profile(); // define compression profile
     spin();
+
+
+    std::vector<uint32_t> vec;
+
+    vec.push_back(5);
+    vec.push_back(4);
+    vec.push_back(3);
+    vec.push_back(2);
+    vec.push_back(5);
+    vec.push_back(4);
+    vec.push_back(3);
+    vec.push_back(2);
+
+    uint32_t *hw32_vptr;
+
+    unsigned int region_size=0x10000;
+    off_t axi_base = 0xA0000000;
+    int fd;
+
+    if((fd=open("/dev/mem",O_RDWR | O_SYNC)) != -1){
+        hw32_vptr =(uint32_t *)mmap(NULL, region_size, PROT_READ|PROT_WRITE, MAP_SHARED, fd, axi_base);
+    }
+
+    write_hardware_registers(vec,hw32_vptr);
+
+    vec = read_hardware_registers(hw32_vptr,4);
+
+    for(int i=0;i<4;i++)
+        ROS_INFO("Result: [%d]\n",vec[i]);
+
+
+
 }
 
 void Alfa_Pc_Compress::set_compression_profile()
