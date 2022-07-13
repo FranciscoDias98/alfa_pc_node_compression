@@ -4,7 +4,7 @@
 #include <chrono>
 #include <time.h>
 #include <string>
-
+#include<unistd.h>
 // testes tempos
 unsigned int x = 0;
 unsigned long tempos = 0;
@@ -51,12 +51,31 @@ Alfa_Pc_Compress::Alfa_Pc_Compress()
     }else{
         ROS_INFO("Nao abri device mem\n");
     }
-    write_hardware_registers(vec,hw32_vptr);
+    //write_hardware_registers(vec,hw32_vptr);
 
-    out_vec = read_hardware_registers(hw32_vptr,4);
+    //out_vec = read_hardware_registers(hw32_vptr,4);
 
-    for(int i=0;i<4;i++)
-        ROS_INFO("Result: [%d]\n",vec[i]);
+    //for(int i=0;i<4;i++)
+    ROS_INFO("------ Matrix_A ----- ");
+    ROS_INFO("[%d]  ",hw32_vptr[0]);
+    ROS_INFO("[%d]  \n",hw32_vptr[1]);
+    ROS_INFO("[%d]  ",hw32_vptr[2]);
+    ROS_INFO("[%d]  \n",hw32_vptr[3]);
+
+    ROS_INFO("------ Matrix_b ----- ");
+    ROS_INFO("[%d]  ",hw32_vptr[4]);
+    ROS_INFO("[%d]  \n",hw32_vptr[5]);
+    ROS_INFO("[%d]  ",hw32_vptr[6]);
+    ROS_INFO("[%d]  \n",hw32_vptr[7]);
+
+    usleep(1000000);
+
+    ROS_INFO("------ Result ----- ");
+    ROS_INFO("[%d]  ",hw32_vptr[8]);
+    ROS_INFO("[%d]  \n",hw32_vptr[9]);
+    ROS_INFO("[%d]  ",hw32_vptr[10]);
+    ROS_INFO("[%d]  \n",hw32_vptr[11]);
+
 
     in_cloud.reset(new pcl::PointCloud<pcl::PointXYZRGB>);
     out_cloud.reset(new pcl::PointCloud<pcl::PointXYZRGB>);
