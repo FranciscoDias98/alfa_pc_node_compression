@@ -26,6 +26,7 @@ Alfa_Pc_Compress::Alfa_Pc_Compress()
     std::cout << "entrei no construtor" << std::endl;
 
     std::vector<uint32_t> vec;
+    std::vector<uint32_t> out_vec;
 
     vec.push_back(5);
     vec.push_back(4);
@@ -52,7 +53,7 @@ Alfa_Pc_Compress::Alfa_Pc_Compress()
     }
     write_hardware_registers(vec,hw32_vptr);
 
-    vec = read_hardware_registers(hw32_vptr,4);
+    out_vec = read_hardware_registers(hw32_vptr,4);
 
     for(int i=0;i<4;i++)
         ROS_INFO("Result: [%d]\n",vec[i]);
