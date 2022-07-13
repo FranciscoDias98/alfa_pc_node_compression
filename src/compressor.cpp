@@ -54,6 +54,15 @@ Alfa_Pc_Compress::Alfa_Pc_Compress()
     //write_hardware_registers(vec,hw32_vptr);
 
     //out_vec = read_hardware_registers(hw32_vptr,4);
+    hw32_vptr[0] = 2;
+    hw32_vptr[1] = 3;
+    hw32_vptr[2] = 4;
+    hw32_vptr[3] = 5;
+
+    hw32_vptr[4] = 2;
+    hw32_vptr[5] = 3;
+    hw32_vptr[6] = 4;
+    hw32_vptr[7] = 5;
 
     //for(int i=0;i<4;i++)
     ROS_INFO("------ Matrix_A ----- ");
