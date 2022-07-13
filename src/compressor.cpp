@@ -40,7 +40,7 @@ Alfa_Pc_Compress::Alfa_Pc_Compress()
     uint32_t *hw32_vptr;
 
     unsigned int region_size=0x10000;
-    off_t axi_base = 0xA0000000;
+    off_t axi_base = 0x00A0000000;
     int fd;
 
     std::cout << "xxx" << std::endl;
