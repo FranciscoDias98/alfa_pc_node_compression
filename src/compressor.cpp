@@ -25,18 +25,6 @@ Alfa_Pc_Compress::Alfa_Pc_Compress()
 {
     std::cout << "entrei no construtor" << std::endl;
 
-    in_cloud.reset(new pcl::PointCloud<pcl::PointXYZRGB>);
-    out_cloud.reset(new pcl::PointCloud<pcl::PointXYZRGB>);
-
-    cluster1.reset(new pcl::PointCloud<pcl::PointXYZRGB>);
-    cluster2.reset(new pcl::PointCloud<pcl::PointXYZRGB>);
-
-    compressed_data_vector.clear();
-
-    set_compression_profile(); // define compression profile
-    spin();
-
-
     std::vector<uint32_t> vec;
 
     vec.push_back(5);
@@ -54,16 +42,34 @@ Alfa_Pc_Compress::Alfa_Pc_Compress()
     off_t axi_base = 0xA0000000;
     int fd;
 
+    std::cout << "xxx" << std::endl;
+
+
     if((fd=open("/dev/mem",O_RDWR | O_SYNC)) != -1){
         hw32_vptr =(uint32_t *)mmap(NULL, region_size, PROT_READ|PROT_WRITE, MAP_SHARED, fd, axi_base);
+    }else{
+        ROS_INFO("Nao abri device mem\n");
     }
-
     write_hardware_registers(vec,hw32_vptr);
 
     vec = read_hardware_registers(hw32_vptr,4);
 
     for(int i=0;i<4;i++)
         ROS_INFO("Result: [%d]\n",vec[i]);
+
+    in_cloud.reset(new pcl::PointCloud<pcl::PointXYZRGB>);
+    out_cloud.reset(new pcl::PointCloud<pcl::PointXYZRGB>);
+
+    cluster1.reset(new pcl::PointCloud<pcl::PointXYZRGB>);
+    cluster2.reset(new pcl::PointCloud<pcl::PointXYZRGB>);
+
+    compressed_data_vector.clear();
+
+    set_compression_profile(); // define compression profile
+    spin();
+
+
+
 
 
 
