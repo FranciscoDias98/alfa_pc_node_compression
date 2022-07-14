@@ -49,15 +49,15 @@ Alfa_Pc_Compress::Alfa_Pc_Compress()
     if((fd=open("/dev/mem",O_RDWR | O_SYNC)) != -1){
         hw32_vptr =(uint32_t *)mmap(NULL, region_size, PROT_READ|PROT_WRITE, MAP_SHARED, fd, axi_base);
 
-        hw32_vptr[0] = 2;
-        hw32_vptr[1] = 3;
-        hw32_vptr[2] = 4;
-        hw32_vptr[3] = 5;
+        hw32_vptr[0] = 0;
+        hw32_vptr[1] = 0;
+        hw32_vptr[2] = 0;
+        hw32_vptr[3] = 0;
 
-        hw32_vptr[4] = 2;
-        hw32_vptr[5] = 3;
-        hw32_vptr[6] = 4;
-        hw32_vptr[7] = 5;
+        hw32_vptr[4] = 0;
+        hw32_vptr[5] = 0;
+        hw32_vptr[6] = 0;
+        hw32_vptr[7] = 0;
 
         //for(int i=0;i<4;i++)
         ROS_INFO("------ Matrix_A ----- ");
