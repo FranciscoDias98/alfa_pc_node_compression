@@ -49,36 +49,37 @@ Alfa_Pc_Compress::Alfa_Pc_Compress()
     if((fd=open("/dev/mem",O_RDWR | O_SYNC)) != -1){
         hw32_vptr =(uint32_t *)mmap(NULL, region_size, PROT_READ|PROT_WRITE, MAP_SHARED, fd, axi_base);
 
-        hw32_vptr[0] = 0;
-        hw32_vptr[1] = 0;
-        hw32_vptr[2] = 0;
-        hw32_vptr[3] = 0;
+        hw32_vptr[0] = 0x01020301;
 
-        hw32_vptr[4] = 0;
-        hw32_vptr[5] = 0;
-        hw32_vptr[6] = 0;
-        hw32_vptr[7] = 0;
+        hw32_vptr[1] = 0x02030102;
+
+        hw32_vptr[2] = 0x03010203;
+
+        hw32_vptr[3] = 0x01020301;
+
+        hw32_vptr[4] = 0x02030000;
+
+
 
         //for(int i=0;i<4;i++)
-        ROS_INFO("------ Matrix_A ----- ");
+        ROS_INFO("------ Input ----- ");
         ROS_INFO("[%d]  ",hw32_vptr[0]);
         ROS_INFO("[%d]  \n",hw32_vptr[1]);
         ROS_INFO("[%d]  ",hw32_vptr[2]);
         ROS_INFO("[%d]  \n",hw32_vptr[3]);
-
-        ROS_INFO("------ Matrix_b ----- ");
         ROS_INFO("[%d]  ",hw32_vptr[4]);
-        ROS_INFO("[%d]  \n",hw32_vptr[5]);
-        ROS_INFO("[%d]  ",hw32_vptr[6]);
-        ROS_INFO("[%d]  \n",hw32_vptr[7]);
 
-        usleep(1000000);
 
         ROS_INFO("------ Result ----- ");
-        ROS_INFO("[%d]  ",hw32_vptr[8]);
-        ROS_INFO("[%d]  \n",hw32_vptr[9]);
-        ROS_INFO("[%d]  ",hw32_vptr[10]);
-        ROS_INFO("[%d]  \n",hw32_vptr[11]);
+        ROS_INFO("[%d]  ",hw32_vptr[5]);
+        ROS_INFO("[%d]  \n",hw32_vptr[6]);
+        ROS_INFO("[%d]  ",hw32_vptr[7]);
+        ROS_INFO("[%d]  \n",hw32_vptr[8]);
+        ROS_INFO("[%d]  ",hw32_vptr[9]);
+        ROS_INFO("[%d]  \n",hw32_vptr[10]);
+        ROS_INFO("[%d]  ",hw32_vptr[11]);
+        ROS_INFO("[%d]  \n",hw32_vptr[12]);
+        ROS_INFO("[%d]  \n",hw32_vptr[13]);
 
     }else{
         ROS_INFO("Nao abri device mem\n");
