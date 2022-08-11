@@ -61,7 +61,7 @@
 #include <chrono>
 #include <time.h>
 #include <ros/ros.h>
-
+#include <map>
 
 #include <fstream>
 
@@ -231,6 +231,7 @@ namespace pcl
             
             // initialize octree
             auto start = std::chrono::high_resolution_clock::now();
+            auto start2 = std::chrono::high_resolution_clock::now();
            
             this->setInputCloud (cloud_arg);
             auto stop = std::chrono::high_resolution_clock::now();
@@ -296,15 +297,10 @@ namespace pcl
                     // i-frame encoding - encode tree structure without referencing previous buffer
                     this->serializeTree (binary_tree_data_vector_, false);
                 else{
-                    auto start = std::chrono::high_resolution_clock::now();
-                    // p-frame encoding - XOR encoded tree structure
-                    this->serializeTree (binary_tree_data_vector_, true);
-                    auto stop = std::chrono::high_resolution_clock::now();
-                    auto duration = std::chrono::duration_cast<chrono::milliseconds>(stop - start);
 
-                    ROS_INFO("Serialize Time: %ld", duration.count());
-                    ROS_INFO("Vector size: %d", binary_tree_data_vector_.size());
-                    ROS_INFO("Octree serilizes size: %ld bytes", sizeof(binary_tree_data_vector_[0])*binary_tree_data_vector_.size());
+                    // p-frame encoding - XOR encoded tree structure
+                    this->serializeTree (binary_tree_data_vector_, true);      
+
                 }
 
 
@@ -316,7 +312,15 @@ namespace pcl
                 
                 // write frame header information to stream
                 this->writeFrameHeader (compressed_tree_data_out_arg);
-                
+
+                auto stop2 = std::chrono::high_resolution_clock::now();
+                auto duration2 = std::chrono::duration_cast<chrono::milliseconds>(stop2 - start2);
+
+                ROS_INFO("Serialize Time: %ld", duration2.count());
+                ROS_INFO("Vector size: %d", binary_tree_data_vector_.size());
+                ROS_INFO("Octree serilizes size: %ld bytes", sizeof(binary_tree_data_vector_[0])*binary_tree_data_vector_.size());
+
+
                 auto start = std::chrono::high_resolution_clock::now();
                 // apply entropy coding to the content of all data vectors and send data to output stream
                 this->entropyEncoding (compressed_tree_data_out_arg);

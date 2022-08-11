@@ -14,6 +14,7 @@ float size_original =0;
 unsigned long tempos_test = 0;
 float size_compressed_test =0;
 float size_original_test =0;
+float points_second = 0;
 
 pcl::io::OctreePointCloudCompression<pcl::PointXYZRGB>* PointCloudEncoder;
 pcl::io::OctreePointCloudCompression<pcl::PointXYZRGB>* PointCloudEncoder1;
@@ -25,6 +26,7 @@ Alfa_Pc_Compress::Alfa_Pc_Compress()
 {
     std::cout << "entrei no construtor" << std::endl;
 
+    //-------------- SW-HW Memory Init ---------------------
     std::vector<uint32_t> vec;
     std::vector<uint32_t> out_vec;
 
@@ -37,57 +39,68 @@ Alfa_Pc_Compress::Alfa_Pc_Compress()
     vec.push_back(3);
     vec.push_back(2);
 
-    uint32_t *hw32_vptr;
-
-    unsigned int region_size=0x10000;
-    off_t axi_base = 0x00A0000000;
+    unsigned int region_size = 0x10000;
+    off_t axi_pbase = 0xA0000000;
+    u_int32_t *hw32_vptr;
+    u64 *ddr_pointer;
     int fd;
+    unsigned int ddr_size = 0x060000;
+    off_t ddr_ptr_base = 0x0F000000; // physical base address
+    //Map the physical address into user space getting a virtual address for it
 
-    std::cout << "xxx" << std::endl;
-
-
-    if((fd=open("/dev/mem",O_RDWR | O_SYNC)) != -1){
-        hw32_vptr =(uint32_t *)mmap(NULL, region_size, PROT_READ|PROT_WRITE, MAP_SHARED, fd, axi_base);
-
-        hw32_vptr[0] = 0x01020301;
-
-        hw32_vptr[1] = 0x02030102;
-
-        hw32_vptr[2] = 0x03010203;
-
-        hw32_vptr[3] = 0x01020301;
-
-        hw32_vptr[4] = 0x02030000;
-
-
-
-        //for(int i=0;i<4;i++)
-        ROS_INFO("------ Input ----- ");
-        ROS_INFO("[%d]  ",hw32_vptr[0]);
-        ROS_INFO("[%d]  \n",hw32_vptr[1]);
-        ROS_INFO("[%d]  ",hw32_vptr[2]);
-        ROS_INFO("[%d]  \n",hw32_vptr[3]);
-        ROS_INFO("[%d]  ",hw32_vptr[4]);
-
-
-        ROS_INFO("------ Result ----- ");
-        ROS_INFO("[%d]  ",hw32_vptr[5]);
-        ROS_INFO("[%d]  \n",hw32_vptr[6]);
-        ROS_INFO("[%d]  ",hw32_vptr[7]);
-        ROS_INFO("[%d]  \n",hw32_vptr[8]);
-        ROS_INFO("[%d]  ",hw32_vptr[9]);
-        ROS_INFO("[%d]  \n",hw32_vptr[10]);
-        ROS_INFO("[%d]  ",hw32_vptr[11]);
-        ROS_INFO("[%d]  \n",hw32_vptr[12]);
-        ROS_INFO("[%d]  \n",hw32_vptr[13]);
-
-    }else{
-        ROS_INFO("Nao abri device mem\n");
+    if((fd = open("/dev/mem", O_RDWR | O_SYNC)) != -1) {
+        ddr_pointer = (u64 *)mmap(NULL, ddr_size, PROT_READ|PROT_WRITE, MAP_SHARED, fd, ddr_ptr_base);
+        hw32_vptr = (u_int32_t *)mmap(NULL, region_size, PROT_READ|PROT_WRITE, MAP_SHARED, fd, axi_pbase);
     }
-    //write_hardware_registers(vec,hw32_vptr);
+    else
+        ROS_INFO("NAO ENTROU NO NMAP :(");
 
-    //out_vec = read_hardware_registers(hw32_vptr,4);
 
+    vector<uint32_t> two_matrix;
+    two_matrix.push_back(1);
+    // two_matrix.push_back(0x02030102);
+    // two_matrix.push_back(0x03010203);
+    // two_matrix.push_back(0x01020301);
+    // two_matrix.push_back(0x02030000);
+    //Write in Hw
+    write_hardware_registers(two_matrix, hw32_vptr);
+
+    int16_t a16_points[4];
+    a16_points[0] = 0x0102;
+    a16_points[1] = 0x0301;
+    a16_points[2] = 0x0203;
+    a16_points[3] = 0x0102;
+    memcpy((void*)(ddr_pointer), a16_points,sizeof(int32_t)*2);
+    a16_points[0] = 0x0301;
+    a16_points[1] = 0x0203;
+    a16_points[2] = 0x0102;
+    a16_points[3] = 0x0301;
+    memcpy((void*)(ddr_pointer+1),a16_points,sizeof(int16_t)*4);
+    a16_points[0] = 0x0203;
+    a16_points[1] = 0x0000;
+    a16_points[2] = 0x0000;
+    a16_points[3] = 0x0000;
+    memcpy((void*)(ddr_pointer+2),a16_points,sizeof(int16_t)*4);
+    a16_points[0] = 0x0000;
+    a16_points[1] = 0x0000;
+    a16_points[2] = 0x0000;
+    a16_points[3] = 0x0000;
+    memcpy((void*)(ddr_pointer+3),a16_points,sizeof(int16_t)*4);
+
+    //Read in Hw
+
+    while(!hw32_vptr[1]){
+        ROS_INFO("WAITING");
+    }
+    int32_t array[2];
+    for(int i=0; i<5; i++){
+        memcpy((void*)(array), ddr_pointer+i,sizeof(int16_t)*4);
+        printf("%X\n", array[0]);
+        printf("%X\n", array[1]);
+    }
+
+
+    //--------------------------------------------------------//
 
     in_cloud.reset(new pcl::PointCloud<pcl::PointXYZRGB>);
     out_cloud.reset(new pcl::PointCloud<pcl::PointXYZRGB>);
@@ -160,10 +173,15 @@ void Alfa_Pc_Compress::process_pointcloud(pcl::PointCloud<pcl::PointXYZRGB>::Ptr
     size_compressed_test = size_compressed_test+compressed_data.tellg();
     tempos_test = tempos_test + duration.count();
 
+    points_second += 1000*output_cloud->points.size() / duration.count();
+
     if(x==100){
         x=0;
         exe_time();
     }
+
+    points_second += 1000*output_cloud->points.size() / duration.count();
+
 
     ROS_INFO("Compressing in %ld ms",duration.count());
 
@@ -280,6 +298,8 @@ void Alfa_Pc_Compress::metrics(std::stringstream& compressed_data, pcl::PointClo
 
     ROS_INFO("Tree depth: %d\n",PointCloudEncoder->getTreeDepth());
 
+
+
     // alfa metrics
     alfa_msg::MetricMessage new_message;
 
@@ -333,6 +353,7 @@ void Alfa_Pc_Compress::exe_time()
     tempos_test = tempos_test/100 ;
     size_compressed_test = size_compressed_test/100;
     size_original_test = (size_original_test)/100;
+    points_second = points_second/100;
     //std::ofstream myFile("./output/exe_time");
     //myFile<< "Exe. Time: "<< tempos_test << std::endl << "Point Cloud Size: "<< size_original_test << std::endl << "Compressed Size: "<<size_compressed_test<< std::endl << "Ratio: " << size_original_test/size_compressed_test << std::endl ;
     //myFile.close();
@@ -341,10 +362,12 @@ void Alfa_Pc_Compress::exe_time()
     ROS_INFO("Point Cloud Size: %f\n", size_original_test);
     ROS_INFO("Compressed Size: %f\n", size_compressed_test);
     ROS_INFO("Ratio: %f\n", size_original_test/size_compressed_test);
+    ROS_INFO("Points/s: %f\n", points_second);
 
     x=0;
     size_compressed_test = 0;
     size_original_test = 0;
+    points_second = 0;
 }
 
 

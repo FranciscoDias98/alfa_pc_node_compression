@@ -574,6 +574,7 @@ pcl::StaticRangeCoder::encodeCharVectorToStream (const std::vector<char>& inputB
       range <<= 8;
       low <<= 8;
       outputCharVector_.push_back (out);
+      std::cout << "Entrei Renormalization" << std::endl ;
     }
 
   }
