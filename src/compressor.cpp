@@ -56,27 +56,18 @@ Alfa_Pc_Compress::Alfa_Pc_Compress()
         ROS_INFO("NAO ENTROU NO NMAP :(");
 
 
-    vector<uint32_t> two_matrix;
-    two_matrix.push_back(1);
-    // two_matrix.push_back(0x02030102);
-    // two_matrix.push_back(0x03010203);
-    // two_matrix.push_back(0x01020301);
-    // two_matrix.push_back(0x02030000);
-    //Write in Hw
-    write_hardware_registers(two_matrix, hw32_vptr);
-
     int16_t a16_points[4];
-    a16_points[0] = 0x0102;
-    a16_points[1] = 0x0301;
-    a16_points[2] = 0x0203;
-    a16_points[3] = 0x0102;
+    a16_points[0] = 0x0201;
+    a16_points[1] = 0x0103;
+    a16_points[2] = 0x0302;
+    a16_points[3] = 0x0201;
     memcpy((void*)(ddr_pointer), a16_points,sizeof(int32_t)*2);
-    a16_points[0] = 0x0301;
-    a16_points[1] = 0x0203;
-    a16_points[2] = 0x0102;
-    a16_points[3] = 0x0301;
+    a16_points[0] = 0x0103;
+    a16_points[1] = 0x0302;
+    a16_points[2] = 0x0201;
+    a16_points[3] = 0x0103;
     memcpy((void*)(ddr_pointer+1),a16_points,sizeof(int16_t)*4);
-    a16_points[0] = 0x0203;
+    a16_points[0] = 0x0302;
     a16_points[1] = 0x0000;
     a16_points[2] = 0x0000;
     a16_points[3] = 0x0000;
@@ -87,16 +78,27 @@ Alfa_Pc_Compress::Alfa_Pc_Compress()
     a16_points[3] = 0x0000;
     memcpy((void*)(ddr_pointer+3),a16_points,sizeof(int16_t)*4);
 
+    sleep(1);
+
+    vector<uint32_t> two_matrix;
+    two_matrix.push_back(1);
+    // two_matrix.push_back(0x02030102);
+    // two_matrix.push_back(0x03010203);
+    // two_matrix.push_back(0x01020301);
+    // two_matrix.push_back(0x02030000);
+    //Write in Hw
+    write_hardware_registers(two_matrix, hw32_vptr);
+
     //Read in Hw
 
     while(!hw32_vptr[1]){
-        ROS_INFO("WAITING");
+      ROS_INFO("WAITING");
     }
     int32_t array[2];
     for(int i=0; i<5; i++){
-        memcpy((void*)(array), ddr_pointer+i,sizeof(int16_t)*4);
-        printf("%X\n", array[0]);
-        printf("%X\n", array[1]);
+      memcpy((void*)(array), ddr_pointer+i,sizeof(int16_t)*4);
+      printf("%X\n", array[0]);
+      printf("%X\n", array[1]);
     }
 
 
