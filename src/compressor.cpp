@@ -4,12 +4,17 @@
 #include <chrono>
 #include <time.h>
 #include <string>
-
+#include<unistd.h>
 // testes tempos
 unsigned int x = 0;
 unsigned long tempos = 0;
 float size_compressed =0;
 float size_original =0;
+
+unsigned long tempos_test = 0;
+float size_compressed_test =0;
+float size_original_test =0;
+float points_second = 0;
 
 pcl::io::OctreePointCloudCompression<pcl::PointXYZRGB>* PointCloudEncoder;
 pcl::io::OctreePointCloudCompression<pcl::PointXYZRGB>* PointCloudEncoder1;
@@ -21,6 +26,84 @@ Alfa_Pc_Compress::Alfa_Pc_Compress()
 {
     std::cout << "entrei no construtor" << std::endl;
 
+    //-------------- SW-HW Memory Init ---------------------
+    std::vector<uint32_t> vec;
+    std::vector<uint32_t> out_vec;
+
+    vec.push_back(5);
+    vec.push_back(4);
+    vec.push_back(3);
+    vec.push_back(2);
+    vec.push_back(5);
+    vec.push_back(4);
+    vec.push_back(3);
+    vec.push_back(2);
+
+    unsigned int region_size = 0x10000;
+    off_t axi_pbase = 0xA0000000;
+    u_int32_t *hw32_vptr;
+    u64 *ddr_pointer;
+    int fd;
+    unsigned int ddr_size = 0x060000;
+    off_t ddr_ptr_base = 0x0F000000; // physical base address
+    //Map the physical address into user space getting a virtual address for it
+
+    if((fd = open("/dev/mem", O_RDWR | O_SYNC)) != -1) {
+        ddr_pointer = (u64 *)mmap(NULL, ddr_size, PROT_READ|PROT_WRITE, MAP_SHARED, fd, ddr_ptr_base);
+        hw32_vptr = (u_int32_t *)mmap(NULL, region_size, PROT_READ|PROT_WRITE, MAP_SHARED, fd, axi_pbase);
+    }
+    else
+        ROS_INFO("NAO ENTROU NO NMAP :(");
+
+
+    int16_t a16_points[4];
+    a16_points[0] = 0x0201;
+    a16_points[1] = 0x0103;
+    a16_points[2] = 0x0302;
+    a16_points[3] = 0x0201;
+    memcpy((void*)(ddr_pointer), a16_points,sizeof(int32_t)*2);
+    a16_points[0] = 0x0103;
+    a16_points[1] = 0x0302;
+    a16_points[2] = 0x0201;
+    a16_points[3] = 0x0103;
+    memcpy((void*)(ddr_pointer+1),a16_points,sizeof(int16_t)*4);
+    a16_points[0] = 0x0302;
+    a16_points[1] = 0x0000;
+    a16_points[2] = 0x0000;
+    a16_points[3] = 0x0000;
+    memcpy((void*)(ddr_pointer+2),a16_points,sizeof(int16_t)*4);
+    a16_points[0] = 0x0000;
+    a16_points[1] = 0x0000;
+    a16_points[2] = 0x0000;
+    a16_points[3] = 0x0000;
+    memcpy((void*)(ddr_pointer+3),a16_points,sizeof(int16_t)*4);
+
+    sleep(1);
+
+    vector<uint32_t> two_matrix;
+    two_matrix.push_back(1);
+    // two_matrix.push_back(0x02030102);
+    // two_matrix.push_back(0x03010203);
+    // two_matrix.push_back(0x01020301);
+    // two_matrix.push_back(0x02030000);
+    //Write in Hw
+    write_hardware_registers(two_matrix, hw32_vptr);
+
+    //Read in Hw
+
+    while(!hw32_vptr[1]){
+      ROS_INFO("WAITING");
+    }
+    int32_t array[2];
+    for(int i=0; i<5; i++){
+      memcpy((void*)(array), ddr_pointer+i,sizeof(int16_t)*4);
+      printf("%X\n", array[0]);
+      printf("%X\n", array[1]);
+    }
+
+
+    //--------------------------------------------------------//
+
     in_cloud.reset(new pcl::PointCloud<pcl::PointXYZRGB>);
     out_cloud.reset(new pcl::PointCloud<pcl::PointXYZRGB>);
 
@@ -31,6 +114,12 @@ Alfa_Pc_Compress::Alfa_Pc_Compress()
 
     set_compression_profile(); // define compression profile
     spin();
+
+
+
+
+
+
 }
 
 void Alfa_Pc_Compress::set_compression_profile()
@@ -80,6 +169,21 @@ void Alfa_Pc_Compress::process_pointcloud(pcl::PointCloud<pcl::PointXYZRGB>::Ptr
     auto duration = duration_cast<milliseconds>(stop - start);
     std::cout << "Fiz Compressao" << std::endl;
 
+    size_original_test = size_original_test + (static_cast<float> (output_cloud->points.size()) * (sizeof (int) + 3.0f * sizeof (float)) / 1024.0f)*1000;
+    x++;
+    compressed_data.seekg(0,ios::end);
+    size_compressed_test = size_compressed_test+compressed_data.tellg();
+    tempos_test = tempos_test + duration.count();
+
+    points_second += 1000*output_cloud->points.size() / duration.count();
+
+    if(x==100){
+        x=0;
+        exe_time();
+    }
+
+    points_second += 1000*output_cloud->points.size() / duration.count();
+
 
     ROS_INFO("Compressing in %ld ms",duration.count());
 
@@ -91,6 +195,8 @@ void Alfa_Pc_Compress::process_pointcloud(pcl::PointCloud<pcl::PointXYZRGB>::Ptr
     //compressed_pointcloud_transport::CompressedPointCloud output_compressed;
     output_compressed.header = header->header;
     output_compressed.data = compressed_data.str();
+
+
 
 
     // pub compressed data
@@ -188,10 +294,13 @@ void Alfa_Pc_Compress::metrics(std::stringstream& compressed_data, pcl::PointClo
     compressed_data.seekg(0,ios::end);
     size_compressed = compressed_data.tellg();
 
+
     size_original = (static_cast<float> (output_cloud->points.size()) * (sizeof (int) + 3.0f * sizeof (float)) / 1024.0f)*1000;
 
 
     ROS_INFO("Tree depth: %d\n",PointCloudEncoder->getTreeDepth());
+
+
 
     // alfa metrics
     alfa_msg::MetricMessage new_message;
@@ -227,6 +336,8 @@ void Alfa_Pc_Compress::metrics(std::stringstream& compressed_data, pcl::PointClo
     new_message.metric_name = "Octree Depth";
     output_metrics.metrics.push_back(new_message);
 
+
+
 }
 
 void Alfa_Pc_Compress::update_compressionSettings(const alfa_msg::AlfaConfigure::Request configs)
@@ -241,16 +352,24 @@ void Alfa_Pc_Compress::update_compressionSettings(const alfa_msg::AlfaConfigure:
 
 void Alfa_Pc_Compress::exe_time()
 {
-    tempos = tempos/100 ;
-    size_compressed = size_compressed/100;
-    size_original = (size_original*1000)/100;
-    std::ofstream myFile("./output/exe_time");
-    myFile<< "Exe. Time: "<< tempos << std::endl << "Point Cloud Size: "<< size_original << std::endl << "Compressed Size: "<<size_compressed<< std::endl << "Ratio: " << size_original/size_compressed << std::endl ;
-    myFile.close();
-    std::cout << "-----------Acabei------------------------------------------------------------- " ;
+    tempos_test = tempos_test/100 ;
+    size_compressed_test = size_compressed_test/100;
+    size_original_test = (size_original_test)/100;
+    points_second = points_second/100;
+    //std::ofstream myFile("./output/exe_time");
+    //myFile<< "Exe. Time: "<< tempos_test << std::endl << "Point Cloud Size: "<< size_original_test << std::endl << "Compressed Size: "<<size_compressed_test<< std::endl << "Ratio: " << size_original_test/size_compressed_test << std::endl ;
+    //myFile.close();
+    ROS_INFO("-----------Acabei------------------------------------------------------------- \n");
+    ROS_INFO("Time: %d\n", tempos_test);
+    ROS_INFO("Point Cloud Size: %f\n", size_original_test);
+    ROS_INFO("Compressed Size: %f\n", size_compressed_test);
+    ROS_INFO("Ratio: %f\n", size_original_test/size_compressed_test);
+    ROS_INFO("Points/s: %f\n", points_second);
+
     x=0;
-    size_compressed = 0;
-    size_original = 0;
+    size_compressed_test = 0;
+    size_original_test = 0;
+    points_second = 0;
 }
 
 

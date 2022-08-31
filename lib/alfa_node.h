@@ -25,6 +25,7 @@
 
 #define TIMER_SLEEP 50000
 
+typedef long long int u64;
 
 using namespace std;
 class AlfaNode
@@ -43,6 +44,11 @@ public:
     uint pcl2_header_seq;
     void spin();
     pcl::PointCloud<pcl::PointXYZRGB>::Ptr pcloud;
+
+    virtual void store_pointcloud_hardware(pcl::PointCloud<pcl::PointXYZI>::Ptr input_cloud, u64 *pointer);
+    virtual pcl::PointCloud<pcl::PointXYZI>::Ptr  read_hardware_pointcloud(u64 *pointer, uint size);
+    virtual vector<uint32_t> read_hardware_registers(uint32_t* pointer, uint size);
+    virtual void  write_hardware_registers(vector<uint32_t>  data, uint32_t* pointer, uint offset = 0);
 
 private:
 
