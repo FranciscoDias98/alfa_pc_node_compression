@@ -229,7 +229,7 @@ namespace pcl
       // encode binary octree structure
       binary_tree_data_vector_size = binary_tree_data_vector_.size ();
       compressed_tree_data_out_arg.write (reinterpret_cast<const char*> (&binary_tree_data_vector_size), sizeof (binary_tree_data_vector_size));
-      compressed_point_data_len_ += entropy_coder_.encodeCharVectorToStream2 (binary_tree_data_vector_,
+      compressed_point_data_len_ += entropy_coder_.encodeCharVectorToStream (binary_tree_data_vector_,
                                                                              compressed_tree_data_out_arg);
 
       if (cloud_with_color_)
@@ -239,7 +239,7 @@ namespace pcl
         point_avg_color_data_vector_size = pointAvgColorDataVector.size ();
         compressed_tree_data_out_arg.write (reinterpret_cast<const char*> (&point_avg_color_data_vector_size),
                                             sizeof (point_avg_color_data_vector_size));
-        compressed_color_data_len_ += entropy_coder_.encodeCharVectorToStream2 (pointAvgColorDataVector,
+        compressed_color_data_len_ += entropy_coder_.encodeCharVectorToStream (pointAvgColorDataVector,
                                                                                compressed_tree_data_out_arg);
       }
 
@@ -259,7 +259,7 @@ namespace pcl
         std::vector<char>& point_diff_data_vector = point_coder_.getDifferentialDataVector ();
         point_diff_data_vector_size = point_diff_data_vector.size ();
         compressed_tree_data_out_arg.write (reinterpret_cast<const char*> (&point_diff_data_vector_size), sizeof (point_diff_data_vector_size));
-        compressed_point_data_len_ += entropy_coder_.encodeCharVectorToStream2 (point_diff_data_vector,
+        compressed_point_data_len_ += entropy_coder_.encodeCharVectorToStream (point_diff_data_vector,
                                                                                compressed_tree_data_out_arg);
         if (cloud_with_color_)
         {
