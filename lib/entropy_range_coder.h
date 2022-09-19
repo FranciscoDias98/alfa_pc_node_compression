@@ -172,7 +172,7 @@ namespace pcl
       unsigned long encodeCharVectorToStream2 (const std::vector<char>& inputByteVector_arg,
                                                        std::ostream& outputByteStream_arg)
       {
-        std::cout << "encoding vector encodeCharVectorToStream" << std::endl ;
+        std::cout << "encoding vector encodeCharVectorToStream2" << std::endl ;
         DWord freq[257];
         uint8_t ch;
         int i, f;
@@ -257,7 +257,7 @@ namespace pcl
             range <<= 8;
             low <<= 8;
             outputCharVector_.push_back (out);
-            std::cout << "Entrei Renormalization" << std::endl ;
+            std::cout << "Entrei Renormalization 2" << std::endl ;
           }
 
         }

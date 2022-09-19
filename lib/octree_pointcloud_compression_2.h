@@ -350,14 +350,14 @@ namespace pcl
                 //////////////////////////////////////////////////////////////////////
                 // write frame header information to stream
                 this->writeFrameHeader (compressed_tree_data_out_arg);
-                
+                printf("------ Write frame header information to stream ------ \n ");
 
                 // -------  Time to encode occupancy code  ------- //
 
                 auto start = chrono::high_resolution_clock::now();
                 // apply entropy coding to the content of all data vectors and send data to output stream
                 this->entropyEncoding (compressed_tree_data_out_arg);
-
+                printf("------ Done Entropy Encoding ------ \n ");
                 auto stop = chrono::high_resolution_clock::now();
                 auto duration = chrono::duration_cast<chrono::milliseconds>(stop - start);
                 PCL_INFO("Range Encoder Time:  %ld ms \n",duration);

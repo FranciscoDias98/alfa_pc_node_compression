@@ -51,7 +51,7 @@ unsigned long
 pcl::AdaptiveRangeCoder::encodeCharVectorToStream (const std::vector<char>& inputByteVector_arg,
                                                    std::ostream& outputByteStream_arg)
 {
-  std::cout << "encoding vector" << std::endl ;
+  std::cout << "encoding vector AdaptiveRangeCoder" << std::endl ;
   DWord freq[257];
   uint8_t ch;
   unsigned int i, j, f;
@@ -489,7 +489,7 @@ unsigned long
 pcl::StaticRangeCoder::encodeCharVectorToStream (const std::vector<char>& inputByteVector_arg,
                                                  std::ostream& outputByteStream_arg)
 {
-  std::cout << "encoding vector encodeCharVectorToStream" << std::endl ;
+  std::cout << "encoding vector StaticRangeCoder encodeCharVectorToStream" << std::endl ;
   DWord freq[257];
   uint8_t ch;
   int i, f;
