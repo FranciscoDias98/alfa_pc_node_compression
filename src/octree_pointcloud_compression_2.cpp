@@ -1,9 +1,9 @@
 #ifndef OCTREE_COMPRESSION_2_CPP
 #define OCTREE_COMPRESSION_2_CPP
 
-//#include <pcl/compression/entropy_range_coder.h>
+#include <pcl/compression/entropy_range_coder.h>
 #include "octree_pointcloud_compression_2.h"
-#include "entropy_range_coder.h"
+//#include "entropy_range_coder.h"
 #include <iterator>
 #include <iostream>
 #include <vector>
@@ -268,7 +268,7 @@ namespace pcl
           point_diff_color_data_vector_size = point_diff_color_data_vector.size ();
           compressed_tree_data_out_arg.write (reinterpret_cast<const char*> (&point_diff_color_data_vector_size),
                                            sizeof (point_diff_color_data_vector_size));
-          compressed_color_data_len_ += entropy_coder_.encodeCharVectorToStream2 (point_diff_color_data_vector,
+          compressed_color_data_len_ += entropy_coder_.encodeCharVectorToStream (point_diff_color_data_vector,
                                                                                  compressed_tree_data_out_arg);
         }
       }

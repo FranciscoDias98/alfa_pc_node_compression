@@ -41,9 +41,9 @@
 
 #include <pcl/octree/octree2buf_base.h>
 #include <pcl/octree/octree_pointcloud.h>
+#include <pcl/compression/entropy_range_coder.h>
 
-
-#include "entropy_range_coder.h"
+//#include "entropy_range_coder.h"
 
 #include "color_coding.h"
 
@@ -360,7 +360,7 @@ namespace pcl
 
                 auto stop = chrono::high_resolution_clock::now();
                 auto duration = chrono::duration_cast<chrono::milliseconds>(stop - start);
-                PCL_INFO("Range Encoder Time:  %ld ms",duration);
+                PCL_INFO("Range Encoder Time:  %ld ms \n",duration);
 
                 tempos_test_2 = tempos_test_2 + duration.count();
                 counter++;
