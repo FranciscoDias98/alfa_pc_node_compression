@@ -58,14 +58,18 @@
 #include <iostream>
 #include <stdio.h>
 #include <string.h>
+#include <fstream>
+#include <iomanip>
+//xxxxx
+
 #include <chrono>
 #include <time.h>
-#include <ros/ros.h>
-#include <map>
+#include<unistd.h>
 
-#include <fstream>
 
-//xxxxx
+
+//unsigned long tempos_test_2 = 0;
+//int counter = 0;
 
 using namespace pcl::octree;
 
@@ -225,18 +229,15 @@ namespace pcl
         encodePointCloud_2 (const PointCloudConstPtr &cloud_arg, std::ostream& compressed_tree_data_out_arg)
 
         {
-            std::cout << "encodePointCloud_2\n";
+            std::cout << "//////////////// encodePointCloud_2 TESTE //////////////////\n";
             unsigned char recent_tree_depth =
                     static_cast<unsigned char> (this->getTreeDepth ());
             
+            static int counter;
+            static long tempos_test_2;
             // initialize octree
-            auto start = std::chrono::high_resolution_clock::now();
-            auto start2 = std::chrono::high_resolution_clock::now();
-           
             this->setInputCloud (cloud_arg);
-            auto stop = std::chrono::high_resolution_clock::now();
-            auto duration = std::chrono::duration_cast<chrono::milliseconds>(stop - start);
-            ROS_INFO("Initialize Octree Time: %ld", duration.count() );
+            
             // add point to octree
             this->addPointsFromInputCloud ();
             
@@ -296,37 +297,79 @@ namespace pcl
                 if (i_frame_)
                     // i-frame encoding - encode tree structure without referencing previous buffer
                     this->serializeTree (binary_tree_data_vector_, false);
-                else{
-
+                else
                     // p-frame encoding - XOR encoded tree structure
-                    this->serializeTree (binary_tree_data_vector_, true);      
-
-                }
-
-
-                fstream file;
-                file.open("octree_serial.bin",ios_base::out | ios::binary);
-                for (int i = 0;i<binary_tree_data_vector_.size();i++) {
-                    file << binary_tree_data_vector_[i] << std::endl;
-                }
+                    this->serializeTree (binary_tree_data_vector_, true);
                 
+                
+                ///////////////// PRINT TO A FILE OCCUPANCY CODE /////////////////////
+
+
+
+//                FILE *file3,*file2,*file_1k;
+//                //file3 = fopen("/home/francisco98/file/occupancy_code_HEX.txt","w"); // ---> imprime hex values
+//                //file2 = fopen("/home/francisco98/file/occupancy_code_hex_line.txt","w"); // --->  imprime hex values \n
+//                file_1k = fopen("/home/francisco98/file/occupancy_code_hex_1kbyte.txt","w");
+
+//                ofstream my_file,my_file2,my_file3,my_file4;
+
+//                //my_file.open("/home/francisco98/file/occupancy_code_bin.txt");
+//                //my_file2.open("/home/francisco98/file/occupancy_code_bin_line.txt");
+//                //my_file3.open("/home/francisco98/file/occupancy_code_hex.txt",ios::out | ios::binary);
+//                //my_file4.open("/home/francisco98/file/occupancy_code_hex_line.txt",ios::out | ios::binary);
+//                for(int i=0;i<1000;i++){
+//                   //my_file << std::bitset<8>(binary_tree_data_vector_[i]) << std::endl;
+//                   //my_file2 << std::bitset<8>(binary_tree_data_vector_[i]);
+//                   //my_file3 << std::hex << binary_tree_data_vector_[i] << std::endl;
+//                   //my_file4 << std::hex << binary_tree_data_vector_[i];
+//                   if(binary_tree_data_vector_[i] < 0 )
+//                       fprintf(file_1k,"%x\n",binary_tree_data_vector_[i] - 0xffffff00);
+//                   else
+//                       fprintf(file_1k,"%x\n",binary_tree_data_vector_[i]);
+
+
+//                   //if(binary_tree_data_vector_[i] < 0 )
+//                       //fprintf(file2,"%x",binary_tree_data_vector_[i] - 0xffffff00);
+//                   //else
+//                       //fprintf(file2,"%x",binary_tree_data_vector_[i]);
+//                }
+
+//                //my_file.close();
+//                //my_file2.close();
+//                //my_file3.close();
+//                //my_file4.close();
+//                //fclose(file3);
+//                //fclose(file2);
+//                fclose(file_1k);
+//                ///// teste binario //////
+
+//                std::cout << std::bitset<8>(binary_tree_data_vector_[0])  << std::endl;
+//                std::cout << std::make_unsigned_t<int>(binary_tree_data_vector_[0]) << std::endl;
+
+
+                //////////////////////////////////////////////////////////////////////
                 // write frame header information to stream
                 this->writeFrameHeader (compressed_tree_data_out_arg);
+                
 
-                auto stop2 = std::chrono::high_resolution_clock::now();
-                auto duration2 = std::chrono::duration_cast<chrono::milliseconds>(stop2 - start2);
+                // -------  Time to encode occupancy code  ------- //
 
-                ROS_INFO("Serialize Time: %ld", duration2.count());
-                ROS_INFO("Vector size: %d", binary_tree_data_vector_.size());
-                ROS_INFO("Octree serilizes size: %ld bytes", sizeof(binary_tree_data_vector_[0])*binary_tree_data_vector_.size());
-
-
-                auto start = std::chrono::high_resolution_clock::now();
+                auto start = chrono::high_resolution_clock::now();
                 // apply entropy coding to the content of all data vectors and send data to output stream
                 this->entropyEncoding (compressed_tree_data_out_arg);
-                auto stop = std::chrono::high_resolution_clock::now();
-                auto duration = std::chrono::duration_cast<chrono::milliseconds>(stop - start);
-                ROS_INFO("Entropy Encoding Time: %ld", duration.count() );
+
+                auto stop = chrono::high_resolution_clock::now();
+                auto duration = chrono::duration_cast<chrono::milliseconds>(stop - start);
+                PCL_INFO("Range Encoder Time:  %ld ms",duration);
+
+                tempos_test_2 = tempos_test_2 + duration.count();
+                counter++;
+                if(counter==100){
+                    counter=0;
+                    PCL_INFO(" ---------------- Range Encoder Time:  %ld ms ----------------------- \n",tempos_test_2/100);
+                }
+
+                // ------------------------------------------------------------------
                 // prepare for next frame
                 this->switchBuffers ();
                 

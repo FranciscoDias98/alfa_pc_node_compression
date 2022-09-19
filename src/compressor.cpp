@@ -26,7 +26,7 @@ Alfa_Pc_Compress::Alfa_Pc_Compress()
 {
     std::cout << "entrei no construtor" << std::endl;
 
-    //-------------- SW-HW Memory Init ---------------------
+    /*//-------------- SW-HW Memory Init ---------------------
     std::vector<uint32_t> vec;
     std::vector<uint32_t> out_vec;
 
@@ -101,7 +101,7 @@ Alfa_Pc_Compress::Alfa_Pc_Compress()
       printf("%X\n", array[1]);
     }
 
-
+    */
     //--------------------------------------------------------//
 
     in_cloud.reset(new pcl::PointCloud<pcl::PointXYZRGB>);
@@ -131,7 +131,7 @@ void Alfa_Pc_Compress::set_compression_profile()
 
     show_statistics = true;
     compression_profile_.pointResolution = 0.01; //
-    compression_profile_.octreeResolution = 0.05; //-----> ALTERAR NESTE!!!!!!!!! voxel size in cubic meters (1m is 0.01 cm)
+    compression_profile_.octreeResolution = 0.03; //-----> ALTERAR NESTE!!!!!!!!! voxel size in cubic meters (1m is 0.01 cm)
     compression_profile_.doVoxelGridDownSampling = true;
     compression_profile_.iFrameRate = 10; // number of prediction frames
     compression_profile_.colorBitResolution = 0;
