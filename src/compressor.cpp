@@ -363,11 +363,12 @@ Alfa_Pc_Compress::Alfa_Pc_Compress()
 
     if(hw){
         store_occupancy_code_hardware(vector,ddr_pointer);
+        std::cout << " ---------- Occupancy Code stored -----------" << std::endl;
         usleep(10);
         configs.push_back(1);
         configs.push_back(32);
         write_hardware_registers(configs, hw32_vptr, 2);
-
+        std::cout << " ----------Write in hw registers -----------" << std::endl;
     }
 
     in_cloud.reset(new pcl::PointCloud<pcl::PointXYZRGB>);
