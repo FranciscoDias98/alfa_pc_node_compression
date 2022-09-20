@@ -19,25 +19,14 @@ float points_second = 0;
 pcl::io::OctreePointCloudCompression<pcl::PointXYZRGB>* PointCloudEncoder;
 pcl::io::OctreePointCloudCompression<pcl::PointXYZRGB>* PointCloudEncoder1;
 
-
+bool hw;
 
 
 Alfa_Pc_Compress::Alfa_Pc_Compress()
 {
-    std::cout << "entrei no construtor" << std::endl;
+    std::cout << " ---------- ALFA-Pc Compressor Constructor -----------" << std::endl;
 
-    /*//-------------- SW-HW Memory Init ---------------------
-    std::vector<uint32_t> vec;
-    std::vector<uint32_t> out_vec;
-
-    vec.push_back(5);
-    vec.push_back(4);
-    vec.push_back(3);
-    vec.push_back(2);
-    vec.push_back(5);
-    vec.push_back(4);
-    vec.push_back(3);
-    vec.push_back(2);
+    //-------------- SW-HW Memory Init ---------------------
 
     unsigned int region_size = 0x10000;
     off_t axi_pbase = 0xA0000000;
@@ -51,11 +40,12 @@ Alfa_Pc_Compress::Alfa_Pc_Compress()
     if((fd = open("/dev/mem", O_RDWR | O_SYNC)) != -1) {
         ddr_pointer = (u64 *)mmap(NULL, ddr_size, PROT_READ|PROT_WRITE, MAP_SHARED, fd, ddr_ptr_base);
         hw32_vptr = (u_int32_t *)mmap(NULL, region_size, PROT_READ|PROT_WRITE, MAP_SHARED, fd, axi_pbase);
+        hw = true;
     }
     else
         ROS_INFO("NAO ENTROU NO NMAP :(");
 
-
+    /*
     int16_t a16_points[4];
     a16_points[0] = 0x0201;
     a16_points[1] = 0x0103;
@@ -103,6 +93,282 @@ Alfa_Pc_Compress::Alfa_Pc_Compress()
 
     */
     //--------------------------------------------------------//
+
+
+
+    vector<char>vector;
+
+
+    vector.push_back(0x88); //
+    vector.push_back(0xa0); //
+    vector.push_back(0xa8); //
+    vector.push_back(0xa0); //
+    vector.push_back(0xa0); //
+    vector.push_back(0x80); //
+    vector.push_back(0x40); //
+    vector.push_back(0xc0); //
+    vector.push_back(0x40); //
+    vector.push_back(0x80); //
+    vector.push_back(0x02); //
+    vector.push_back(0x08); //
+    vector.push_back(0x40); //
+    vector.push_back(0x80); //
+    vector.push_back(0x04); //
+    vector.push_back(0x40); //
+    vector.push_back(0x40); //
+    vector.push_back(0x01); //
+    vector.push_back(0x04); //
+    vector.push_back(0x08); //
+    vector.push_back(0x20); //
+    vector.push_back(0x10); //
+    vector.push_back(0x32); //
+    vector.push_back(0x50); //
+    vector.push_back(0x14); // 25
+    vector.push_back(0x50); //
+    vector.push_back(0x01); //
+    vector.push_back(0x04); //
+    vector.push_back(0x20); //
+    vector.push_back(0x04); //
+    vector.push_back(0x04); //
+    vector.push_back(0x20); //
+    vector.push_back(0x04); //
+    vector.push_back(0x40); //
+    vector.push_back(0x10); //
+    vector.push_back(0x80); //
+    vector.push_back(0x01); //
+    vector.push_back(0x01); //
+    vector.push_back(0x10); //
+    vector.push_back(0x01); //
+    vector.push_back(0x80); //
+    vector.push_back(0x10); //
+    vector.push_back(0x22); //
+    vector.push_back(0x02); //
+    vector.push_back(0x0a); //
+    vector.push_back(0x10); //
+    vector.push_back(0x20); //
+    vector.push_back(0x40); //
+    vector.push_back(0x20); //
+    vector.push_back(0xa0); // 50
+    vector.push_back(0x88); //
+    vector.push_back(0xa0); //
+    vector.push_back(0xa8); //
+    vector.push_back(0xa0); //
+    vector.push_back(0xa0); //
+    vector.push_back(0x80); //
+    vector.push_back(0x40); //
+    vector.push_back(0xc0); //
+    vector.push_back(0x40); //
+    vector.push_back(0x80); //
+    vector.push_back(0x02); //
+    vector.push_back(0x08); //
+    vector.push_back(0x40); //
+    vector.push_back(0x80); //
+    vector.push_back(0x04); //
+    vector.push_back(0x40); //
+    vector.push_back(0x40); //
+    vector.push_back(0x01); //
+    vector.push_back(0x04); //
+    vector.push_back(0x08); //
+    vector.push_back(0x20); //
+    vector.push_back(0x10); //
+    vector.push_back(0x32); //
+    vector.push_back(0x50); //
+    vector.push_back(0x14); // 25
+    vector.push_back(0x50); //
+    vector.push_back(0x01); //
+    vector.push_back(0x04); //
+    vector.push_back(0x20); //
+    vector.push_back(0x04); //
+    vector.push_back(0x04); //
+    vector.push_back(0x20); //
+    vector.push_back(0x04); //
+    vector.push_back(0x40); //
+    vector.push_back(0x10); //
+    vector.push_back(0x80); //
+    vector.push_back(0x01); //
+    vector.push_back(0x01); //
+    vector.push_back(0x10); //
+    vector.push_back(0x01); //
+    vector.push_back(0x80); //
+    vector.push_back(0x10); //
+    vector.push_back(0x22); //
+    vector.push_back(0x02); //
+    vector.push_back(0x0a); //
+    vector.push_back(0x10); //
+    vector.push_back(0x20); //
+    vector.push_back(0x40); //
+    vector.push_back(0x20); //
+    vector.push_back(0xa0); // 50
+    vector.push_back(0x88); //
+    vector.push_back(0xa0); //
+    vector.push_back(0xa8); //
+    vector.push_back(0xa0); //
+    vector.push_back(0xa0); //
+    vector.push_back(0x80); //
+    vector.push_back(0x40); //
+    vector.push_back(0xc0); //
+    vector.push_back(0x40); //
+    vector.push_back(0x80); //
+    vector.push_back(0x02); //
+    vector.push_back(0x08); //
+    vector.push_back(0x40); //
+    vector.push_back(0x80); //
+    vector.push_back(0x04); //
+    vector.push_back(0x40); //
+    vector.push_back(0x40); //
+    vector.push_back(0x01); //
+    vector.push_back(0x04); //
+    vector.push_back(0x08); //
+    vector.push_back(0x20); //
+    vector.push_back(0x10); //
+    vector.push_back(0x32); //
+    vector.push_back(0x50); //
+    vector.push_back(0x14); // 25
+    vector.push_back(0x50); //
+    vector.push_back(0x01); //
+    vector.push_back(0x04); //
+    vector.push_back(0x20); //
+    vector.push_back(0x04); //
+    vector.push_back(0x04); //
+    vector.push_back(0x20); //
+    vector.push_back(0x04); //
+    vector.push_back(0x40); //
+    vector.push_back(0x10); //
+    vector.push_back(0x80); //
+    vector.push_back(0x01); //
+    vector.push_back(0x01); //
+    vector.push_back(0x10); //
+    vector.push_back(0x01); //
+    vector.push_back(0x80); //
+    vector.push_back(0x10); //
+    vector.push_back(0x22); //
+    vector.push_back(0x02); //
+    vector.push_back(0x0a); //
+    vector.push_back(0x10); //
+    vector.push_back(0x20); //
+    vector.push_back(0x40); //
+    vector.push_back(0x20); //
+    vector.push_back(0xa0); // 50
+    vector.push_back(0x88); //
+    vector.push_back(0xa0); //
+    vector.push_back(0xa8); //
+    vector.push_back(0xa0); //
+    vector.push_back(0xa0); //
+    vector.push_back(0x80); //
+    vector.push_back(0x40); //
+    vector.push_back(0xc0); //
+    vector.push_back(0x40); //
+    vector.push_back(0x80); //
+    vector.push_back(0x02); //
+    vector.push_back(0x08); //
+    vector.push_back(0x40); //
+    vector.push_back(0x80); //
+    vector.push_back(0x04); //
+    vector.push_back(0x40); //
+    vector.push_back(0x40); //
+    vector.push_back(0x01); //
+    vector.push_back(0x04); //
+    vector.push_back(0x08); //
+    vector.push_back(0x20); //
+    vector.push_back(0x10); //
+    vector.push_back(0x32); //
+    vector.push_back(0x50); //
+    vector.push_back(0x14); // 25
+    vector.push_back(0x50); //
+    vector.push_back(0x01); //
+    vector.push_back(0x04); //
+    vector.push_back(0x20); //
+    vector.push_back(0x04); //
+    vector.push_back(0x04); //
+    vector.push_back(0x20); //
+    vector.push_back(0x04); //
+    vector.push_back(0x40); //
+    vector.push_back(0x10); //
+    vector.push_back(0x80); //
+    vector.push_back(0x01); //
+    vector.push_back(0x01); //
+    vector.push_back(0x10); //
+    vector.push_back(0x01); //
+    vector.push_back(0x80); //
+    vector.push_back(0x10); //
+    vector.push_back(0x22); //
+    vector.push_back(0x02); //
+    vector.push_back(0x0a); //
+    vector.push_back(0x10); //
+    vector.push_back(0x20); //
+    vector.push_back(0x40); //
+    vector.push_back(0x20); //
+    vector.push_back(0xa0); // 50
+    vector.push_back(0x88); //
+    vector.push_back(0xa0); //
+    vector.push_back(0xa8); //
+    vector.push_back(0xa0); //
+    vector.push_back(0xa0); //
+    vector.push_back(0x80); //
+    vector.push_back(0x40); //
+    vector.push_back(0xc0); //
+    vector.push_back(0x40); //
+    vector.push_back(0x80); //
+    vector.push_back(0x02); //
+    vector.push_back(0x08); //
+    vector.push_back(0x40); //
+    vector.push_back(0x80); //
+    vector.push_back(0x04); //
+    vector.push_back(0x40); //
+    vector.push_back(0x40); //
+    vector.push_back(0x01); //
+    vector.push_back(0x04); //
+    vector.push_back(0x08); //
+    vector.push_back(0x20); //
+    vector.push_back(0x10); //
+    vector.push_back(0x32); //
+    vector.push_back(0x50); //
+    vector.push_back(0x14); // 25
+    vector.push_back(0x50); //
+    vector.push_back(0x01); //
+    vector.push_back(0x04); //
+    vector.push_back(0x20); //
+    vector.push_back(0x04); //
+    vector.push_back(0x04); //
+    vector.push_back(0x20); //
+    vector.push_back(0x04); //
+    vector.push_back(0x40); //
+    vector.push_back(0x10); //
+    vector.push_back(0x80); //
+    vector.push_back(0x01); //
+    vector.push_back(0x01); //
+    vector.push_back(0x10); //
+    vector.push_back(0x01); //
+    vector.push_back(0x80); //
+    vector.push_back(0x10); //
+    vector.push_back(0x22); //
+    vector.push_back(0x02); //
+    vector.push_back(0x0a); //
+    vector.push_back(0x10); //
+    vector.push_back(0x20); //
+    vector.push_back(0x40); //
+    vector.push_back(0x20); //
+    vector.push_back(0xa0); // 50
+    vector.push_back(0x88); //
+    vector.push_back(0xa0); //
+    vector.push_back(0xa8); //
+    vector.push_back(0xa0); //
+    vector.push_back(0xa0); //
+    vector.push_back(0x80); //
+
+
+
+    std::vector<uint32_t>configs;
+
+
+    if(hw){
+        store_occupancy_code_hardware(vector,ddr_pointer);
+        usleep(10);
+        configs.push_back(1);
+        configs.push_back(32);
+        write_hardware_registers(configs, hw32_vptr, 2);
+
+    }
 
     in_cloud.reset(new pcl::PointCloud<pcl::PointXYZRGB>);
     out_cloud.reset(new pcl::PointCloud<pcl::PointXYZRGB>);
@@ -205,71 +471,23 @@ void Alfa_Pc_Compress::process_pointcloud(pcl::PointCloud<pcl::PointXYZRGB>::Ptr
 }
 
 
-
-void Alfa_Pc_Compress::run_worker(int thread_number)
+void Alfa_Pc_Compress::store_occupancy_code_hardware(std::vector<char> vec, u64 *pointer)
 {
-    std::cout << "THREAD: " << thread_number << std::endl;
-    std::cout << "Cloud Size: " << pcloud->size()<< std::endl;
+    int index = 0;
+    int8_t occupancy_code[8];
 
-    std::stringstream compressed_data;
-    std::stringstream compressed_data1;
-
-    for(int i = (pcloud->size()/number_threads)*thread_number;i<= (pcloud->size()/number_threads)*(thread_number+1);i++)
+    for(index = 0;index<vec.size();index++)
     {
-        pcl::PointXYZRGB point = (*pcloud)[i];
-//        mutex_cluster.lock();
-//        //push point to cluster
-        if(thread_number == 0)
-        {
-            mutex_cluster.lock();
-            cluster1->push_back(point);
-            mutex_cluster.unlock();
-
-
-        }else if (thread_number == 1)
-        {
-            mutex_cluster.lock();
-            cluster2->push_back(point);
-            mutex_cluster.unlock();
-        }
-
-//        mutex_cluster.unlock();
+        occupancy_code[0] = vec[0 + 8*index];
+        occupancy_code[1] = vec[1 + 8*index];
+        occupancy_code[2] = vec[2 + 8*index];
+        occupancy_code[3] = vec[3 + 8*index];
+        occupancy_code[4] = vec[4 + 8*index];
+        occupancy_code[5] = vec[5 + 8*index];
+        occupancy_code[6] = vec[6 + 8*index];
+        occupancy_code[7] = vec[7 + 8*index];
+        memcpy((void*)(pointer+index),occupancy_code,sizeof(int8_t)*8);
     }
-
-//    // vai ter de ser array de encoders
-//    //PointCloudEncoder->encodePointCloud(clusters[thread_number],compressed_data_vector[thread_number]);
-//    std::cout << "Fiz cluster: " << std::endl;
-
-//    mutex_encoder.lock();
-//    encoder_vector[thread_number]->encodePointCloud_2(clusters[thread_number],compressed_data_vector[thread_number]);
-//    mutex_encoder.unlock();
-
-//    mutex_compressed_data.lock();
-//    output_compressed.data += compressed_data_vector[thread_number].str();
-//    mutex_compressed_data.unlock();
-
-    if(thread_number == 0)
-    {
-        PointCloudEncoder->encodePointCloud_2(cluster1,compressed_data);
-        std::cout << "Fiz compressao encoder 0" << std::endl;
-
-        mutex_compressed_data.lock();
-        output_compressed.data += compressed_data.str();
-        mutex_compressed_data.unlock();
-
-    }
-    if(thread_number == 1)
-    {
-
-        PointCloudEncoder1->encodePointCloud_2(cluster2,compressed_data1);
-        std::cout << "Fiz compressao encoder 1" << std::endl;
-
-        mutex_compressed_data.lock();
-        output_compressed.data += compressed_data1.str();
-        mutex_compressed_data.unlock();
-
-    }
-
 
 }
 
@@ -506,3 +724,69 @@ void Alfa_Pc_Compress::do_Compression(pcl::PointCloud<pcl::PointXYZRGB>::Ptr in_
 //    publish_metrics(output_metrics);
 //}
 
+void Alfa_Pc_Compress::run_worker(int thread_number)
+{
+    std::cout << "THREAD: " << thread_number << std::endl;
+    std::cout << "Cloud Size: " << pcloud->size()<< std::endl;
+
+    std::stringstream compressed_data;
+    std::stringstream compressed_data1;
+
+    for(int i = (pcloud->size()/number_threads)*thread_number;i<= (pcloud->size()/number_threads)*(thread_number+1);i++)
+    {
+        pcl::PointXYZRGB point = (*pcloud)[i];
+//        mutex_cluster.lock();
+//        //push point to cluster
+        if(thread_number == 0)
+        {
+            mutex_cluster.lock();
+            cluster1->push_back(point);
+            mutex_cluster.unlock();
+
+
+        }else if (thread_number == 1)
+        {
+            mutex_cluster.lock();
+            cluster2->push_back(point);
+            mutex_cluster.unlock();
+        }
+
+//        mutex_cluster.unlock();
+    }
+
+//    // vai ter de ser array de encoders
+//    //PointCloudEncoder->encodePointCloud(clusters[thread_number],compressed_data_vector[thread_number]);
+//    std::cout << "Fiz cluster: " << std::endl;
+
+//    mutex_encoder.lock();
+//    encoder_vector[thread_number]->encodePointCloud_2(clusters[thread_number],compressed_data_vector[thread_number]);
+//    mutex_encoder.unlock();
+
+//    mutex_compressed_data.lock();
+//    output_compressed.data += compressed_data_vector[thread_number].str();
+//    mutex_compressed_data.unlock();
+
+    if(thread_number == 0)
+    {
+        PointCloudEncoder->encodePointCloud_2(cluster1,compressed_data);
+        std::cout << "Fiz compressao encoder 0" << std::endl;
+
+        mutex_compressed_data.lock();
+        output_compressed.data += compressed_data.str();
+        mutex_compressed_data.unlock();
+
+    }
+    if(thread_number == 1)
+    {
+
+        PointCloudEncoder1->encodePointCloud_2(cluster2,compressed_data1);
+        std::cout << "Fiz compressao encoder 1" << std::endl;
+
+        mutex_compressed_data.lock();
+        output_compressed.data += compressed_data1.str();
+        mutex_compressed_data.unlock();
+
+    }
+
+
+}

@@ -204,6 +204,7 @@ void AlfaNode::store_pointcloud_hardware(pcl::PointCloud<pcl::PointXYZI>::Ptr in
     }
 }
 
+
 pcl::PointCloud<pcl::PointXYZI>::Ptr AlfaNode::read_hardware_pointcloud(u64 *pointer, uint size)
 {
     pcl::PointCloud<pcl::PointXYZI>::Ptr return_cloud;

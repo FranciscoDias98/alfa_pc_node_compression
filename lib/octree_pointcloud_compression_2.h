@@ -350,6 +350,7 @@ namespace pcl
                 //////////////////////////////////////////////////////////////////////
                 // write frame header information to stream
                 this->writeFrameHeader (compressed_tree_data_out_arg);
+
                 printf("------ Write frame header information to stream ------ \n ");
 
                 // -------  Time to encode occupancy code  ------- //

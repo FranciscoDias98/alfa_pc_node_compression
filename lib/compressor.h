@@ -63,6 +63,7 @@ public:
     void metrics(std::stringstream& compressed_data, pcl::PointCloud<pcl::PointXYZRGB>::Ptr output_cloud, double duration);
 
     void update_compressionSettings(const alfa_msg::AlfaConfigure::Request configs);
+    void store_occupancy_code_hardware(std::vector<char> vec ,u64 *pointer);
 
 private:
     pcl::PointCloud<pcl::PointXYZRGB>::Ptr in_cloud, out_cloud,cluster1,cluster2;
