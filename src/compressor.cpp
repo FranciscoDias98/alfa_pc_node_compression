@@ -367,6 +367,7 @@ Alfa_Pc_Compress::Alfa_Pc_Compress()
         usleep(10);
         configs.push_back(1);
         configs.push_back(32);
+        configs.push_back(256);
         write_hardware_registers(configs, hw32_vptr, 0);
         std::cout << " ----------Write in hw registers -----------" << std::endl;
     }
