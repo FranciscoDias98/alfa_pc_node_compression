@@ -235,11 +235,24 @@ namespace pcl
             
             static int counter;
             static long tempos_test_2;
+
+
+            auto start_setInputCloud = chrono::high_resolution_clock::now();
             // initialize octree
             this->setInputCloud (cloud_arg);
-            
+            printf("------ Done setInputCloud ------ \n ");
+            auto stop_setInputCloud = chrono::high_resolution_clock::now();
+            auto duration_setInputCloud = chrono::duration_cast<chrono::milliseconds>(stop_setInputCloud - start_setInputCloud);
+            PCL_INFO("setInputCloud Time:  %ld ms \n",duration_setInputCloud);
+
+
+            auto start_addPointsFromInputCloud = chrono::high_resolution_clock::now();
             // add point to octree
             this->addPointsFromInputCloud ();
+            printf("------ Done addPointsFromInputCloud ------ \n ");
+            auto stop_addPointsFromInputCloud = chrono::high_resolution_clock::now();
+            auto duration_addPointsFromInputCloud = chrono::duration_cast<chrono::milliseconds>(stop_addPointsFromInputCloud - start_addPointsFromInputCloud);
+            PCL_INFO("addPointsFromInputCloud Time:  %ld ms \n",duration_addPointsFromInputCloud);
             
             // make sure cloud contains points
             if (this->leaf_count_>0) {
@@ -293,14 +306,28 @@ namespace pcl
                 point_coder_.initializeEncoding ();
                 point_coder_.setPointCount (static_cast<unsigned int> (cloud_arg->points.size ()));
                 
+
+
+
                 // serialize octree
-                if (i_frame_)
+                if (i_frame_){
+                    auto start_serializeTree = chrono::high_resolution_clock::now();
                     // i-frame encoding - encode tree structure without referencing previous buffer
                     this->serializeTree (binary_tree_data_vector_, false);
-                else
+                    printf("------ Done serializeTree i-frame encoding ------ \n ");
+                    auto stop_serializeTree = chrono::high_resolution_clock::now();
+                    auto duration_serializeTree = chrono::duration_cast<chrono::milliseconds>(stop_serializeTree - start_serializeTree);
+                    PCL_INFO("serializeTree Time:  %ld ms \n",duration_serializeTree);
+                }
+                else{
                     // p-frame encoding - XOR encoded tree structure
+                    auto start_serializeTree = chrono::high_resolution_clock::now();
                     this->serializeTree (binary_tree_data_vector_, true);
-                
+                    printf("------ Done serializeTree  p-frame encoding - XOR ------ \n ");
+                    auto stop_serializeTree = chrono::high_resolution_clock::now();
+                    auto duration_serializeTree = chrono::duration_cast<chrono::milliseconds>(stop_serializeTree - start_serializeTree);
+                    PCL_INFO("serializeTree Time:  %ld ms \n",duration_serializeTree);
+                }
                 
                 ///////////////// PRINT TO A FILE OCCUPANCY CODE /////////////////////
 

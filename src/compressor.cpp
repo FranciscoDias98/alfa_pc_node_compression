@@ -360,7 +360,6 @@ Alfa_Pc_Compress::Alfa_Pc_Compress()
 
     std::vector<uint32_t>configs;
 
-
     if(hw){
         store_occupancy_code_hardware(vector,ddr_pointer);
         std::cout << " ---------- Occupancy Code stored -----------" << std::endl;
