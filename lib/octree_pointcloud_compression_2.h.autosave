@@ -41,9 +41,9 @@
 
 #include <pcl/octree/octree2buf_base.h>
 #include <pcl/octree/octree_pointcloud.h>
+#include <pcl/compression/entropy_range_coder.h>
 
-
-#include "entropy_range_coder.h"
+//#include "entropy_range_coder.h"
 
 #include "color_coding.h"
 
@@ -58,8 +58,18 @@
 #include <iostream>
 #include <stdio.h>
 #include <string.h>
-
+#include <fstream>
+#include <iomanip>
 //xxxxx
+
+#include <chrono>
+#include <time.h>
+#include<unistd.h>
+
+
+
+//unsigned long tempos_test_2 = 0;
+//int counter = 0;
 
 using namespace pcl::octree;
 
@@ -219,15 +229,34 @@ namespace pcl
         encodePointCloud_2 (const PointCloudConstPtr &cloud_arg, std::ostream& compressed_tree_data_out_arg)
 
         {
-            std::cout << "encodePointCloud_2\n";
+            std::cout << "//////////////// encodePointCloud_2 TESTE //////////////////\n";
             unsigned char recent_tree_depth =
                     static_cast<unsigned char> (this->getTreeDepth ());
             
+            static int counter;
+            static long tempos_test_2;
+            static long tempo_test_setInputCloud;
+            static long tempo_test_addPointsFromInputCloud;
+            static long tempo_test_serialize;
+
+            auto start_setInputCloud = chrono::high_resolution_clock::now();
             // initialize octree
             this->setInputCloud (cloud_arg);
-            
+            printf("------ Done setInputCloud ------ \n ");
+            auto stop_setInputCloud = chrono::high_resolution_clock::now();
+            auto duration_setInputCloud = chrono::duration_cast<chrono::milliseconds>(stop_setInputCloud - start_setInputCloud);
+            PCL_INFO("setInputCloud Time:  %ld ms \n",duration_setInputCloud);
+
+
+
+
+            auto start_addPointsFromInputCloud = chrono::high_resolution_clock::now();
             // add point to octree
             this->addPointsFromInputCloud ();
+            printf("------ Done addPointsFromInputCloud ------ \n ");
+            auto stop_addPointsFromInputCloud = chrono::high_resolution_clock::now();
+            auto duration_addPointsFromInputCloud = chrono::duration_cast<chrono::milliseconds>(stop_addPointsFromInputCloud - start_addPointsFromInputCloud);
+            PCL_INFO("addPointsFromInputCloud Time:  %ld ms \n",duration_addPointsFromInputCloud);
             
             // make sure cloud contains points
             if (this->leaf_count_>0) {
@@ -281,21 +310,111 @@ namespace pcl
                 point_coder_.initializeEncoding ();
                 point_coder_.setPointCount (static_cast<unsigned int> (cloud_arg->points.size ()));
                 
+
+
+
                 // serialize octree
-                if (i_frame_)
+                if (i_frame_){
+                    auto start_serializeTree = chrono::high_resolution_clock::now();
                     // i-frame encoding - encode tree structure without referencing previous buffer
                     this->serializeTree (binary_tree_data_vector_, false);
-                else
+                    printf("------ Done serializeTree i-frame encoding ------ \n ");
+                    auto stop_serializeTree = chrono::high_resolution_clock::now();
+                    auto duration_serializeTree = chrono::duration_cast<chrono::milliseconds>(stop_serializeTree - start_serializeTree);
+                    PCL_INFO("serializeTree Time:  %ld ms \n",duration_serializeTree);
+                    //this->serializeTree2();
+                    tempo_test_serialize = tempo_test_serialize + duration_serializeTree.count();
+                }
+                else{
                     // p-frame encoding - XOR encoded tree structure
-                    this->serializeTree (binary_tree_data_vector_, true);
+                    auto start_serializeTree = chrono::high_resolution_clock::now();
+                    this->serializeTree (binary_tree_data_vector_, true); // change to serializeTree2 <-----
+                    printf("------ Done serializeTree  p-frame encoding - XOR ------ \n ");
+                    auto stop_serializeTree = chrono::high_resolution_clock::now();
+                    auto duration_serializeTree = chrono::duration_cast<chrono::milliseconds>(stop_serializeTree - start_serializeTree);
+                    PCL_INFO("serializeTree Time:  %ld ms \n",duration_serializeTree);
+                    tempo_test_serialize = tempo_test_serialize + duration_serializeTree.count();
+                }
                 
-                
+                ///////////////// PRINT TO A FILE OCCUPANCY CODE /////////////////////
+
+
+
+//                FILE *file3,*file2,*file_1k;
+//                //file3 = fopen("/home/francisco98/file/occupancy_code_HEX.txt","w"); // ---> imprime hex values
+//                //file2 = fopen("/home/francisco98/file/occupancy_code_hex_line.txt","w"); // --->  imprime hex values \n
+//                file_1k = fopen("/home/francisco98/file/occupancy_code_hex_1kbyte.txt","w");
+
+//                ofstream my_file,my_file2,my_file3,my_file4;
+
+//                //my_file.open("/home/francisco98/file/occupancy_code_bin.txt");
+//                //my_file2.open("/home/francisco98/file/occupancy_code_bin_line.txt");
+//                //my_file3.open("/home/francisco98/file/occupancy_code_hex.txt",ios::out | ios::binary);
+//                //my_file4.open("/home/francisco98/file/occupancy_code_hex_line.txt",ios::out | ios::binary);
+//                for(int i=0;i<1000;i++){
+//                   //my_file << std::bitset<8>(binary_tree_data_vector_[i]) << std::endl;
+//                   //my_file2 << std::bitset<8>(binary_tree_data_vector_[i]);
+//                   //my_file3 << std::hex << binary_tree_data_vector_[i] << std::endl;
+//                   //my_file4 << std::hex << binary_tree_data_vector_[i];
+//                   if(binary_tree_data_vector_[i] < 0 )
+//                       fprintf(file_1k,"%x\n",binary_tree_data_vector_[i] - 0xffffff00);
+//                   else
+//                       fprintf(file_1k,"%x\n",binary_tree_data_vector_[i]);
+
+
+//                   //if(binary_tree_data_vector_[i] < 0 )
+//                       //fprintf(file2,"%x",binary_tree_data_vector_[i] - 0xffffff00);
+//                   //else
+//                       //fprintf(file2,"%x",binary_tree_data_vector_[i]);
+//                }
+
+//                //my_file.close();
+//                //my_file2.close();
+//                //my_file3.close();
+//                //my_file4.close();
+//                //fclose(file3);
+//                //fclose(file2);
+//                fclose(file_1k);
+//                ///// teste binario //////
+
+//                std::cout << std::bitset<8>(binary_tree_data_vector_[0])  << std::endl;
+//                std::cout << std::make_unsigned_t<int>(binary_tree_data_vector_[0]) << std::endl;
+
+
+                //////////////////////////////////////////////////////////////////////
                 // write frame header information to stream
                 this->writeFrameHeader (compressed_tree_data_out_arg);
-                
+
+                printf("------ Write frame header information to stream ------ \n ");
+
+                // -------  Time to encode occupancy code  ------- //
+
+                auto start = chrono::high_resolution_clock::now();
                 // apply entropy coding to the content of all data vectors and send data to output stream
                 this->entropyEncoding (compressed_tree_data_out_arg);
-                
+                printf("------ Done Entropy Encoding ------ \n ");
+                auto stop = chrono::high_resolution_clock::now();
+                auto duration = chrono::duration_cast<chrono::milliseconds>(stop - start);
+                PCL_INFO("Range Encoder Time:  %ld ms \n",duration);
+
+                tempos_test_2 = tempos_test_2 + duration.count();
+                tempo_test_addPointsFromInputCloud = tempo_test_addPointsFromInputCloud + duration_addPointsFromInputCloud.count();
+                tempo_test_setInputCloud = tempo_test_setInputCloud + duration_setInputCloud.count();
+
+                counter++;
+                if(counter==100){
+                    counter=0;
+                    PCL_INFO(" ---------------- setInputCloud Time:  %ld ms ----------------------- \n",tempo_test_addPointsFromInputCloud/100);
+                    PCL_INFO(" ---------------- addPointsFromInputCloud Time:  %ld ms ------------- \n",tempo_test_addPointsFromInputCloud/100);
+                    PCL_INFO(" ---------------- Serialize Time:  %ld ms --------------------------- \n",tempo_test_serialize/100);
+                    PCL_INFO(" ---------------- Range Encoder Time:  %ld ms ----------------------- \n",tempos_test_2/100);
+                    tempos_test_2 = 0;
+                    tempo_test_serialize = 0;
+                    tempo_test_addPointsFromInputCloud = 0;
+                    tempo_test_setInputCloud = 0; 
+                }
+
+                // ------------------------------------------------------------------
                 // prepare for next frame
                 this->switchBuffers ();
                 

@@ -235,7 +235,9 @@ namespace pcl
             
             static int counter;
             static long tempos_test_2;
-
+            static long tempo_test_setInputCloud;
+            static long tempo_test_addPointsFromInputCloud;
+            static long tempo_test_serialize;
 
             auto start_setInputCloud = chrono::high_resolution_clock::now();
             // initialize octree
@@ -244,6 +246,8 @@ namespace pcl
             auto stop_setInputCloud = chrono::high_resolution_clock::now();
             auto duration_setInputCloud = chrono::duration_cast<chrono::milliseconds>(stop_setInputCloud - start_setInputCloud);
             PCL_INFO("setInputCloud Time:  %ld ms \n",duration_setInputCloud);
+
+
 
 
             auto start_addPointsFromInputCloud = chrono::high_resolution_clock::now();
@@ -318,15 +322,18 @@ namespace pcl
                     auto stop_serializeTree = chrono::high_resolution_clock::now();
                     auto duration_serializeTree = chrono::duration_cast<chrono::milliseconds>(stop_serializeTree - start_serializeTree);
                     PCL_INFO("serializeTree Time:  %ld ms \n",duration_serializeTree);
+                    //this->serializeTree2();
+                    tempo_test_serialize = tempo_test_serialize + duration_serializeTree.count();
                 }
                 else{
                     // p-frame encoding - XOR encoded tree structure
                     auto start_serializeTree = chrono::high_resolution_clock::now();
-                    this->serializeTree (binary_tree_data_vector_, true);
+                    this->serializeTree (binary_tree_data_vector_, true); // change to serializeTree2 <-----
                     printf("------ Done serializeTree  p-frame encoding - XOR ------ \n ");
                     auto stop_serializeTree = chrono::high_resolution_clock::now();
                     auto duration_serializeTree = chrono::duration_cast<chrono::milliseconds>(stop_serializeTree - start_serializeTree);
                     PCL_INFO("serializeTree Time:  %ld ms \n",duration_serializeTree);
+                    tempo_test_serialize = tempo_test_serialize + duration_serializeTree.count();
                 }
                 
                 ///////////////// PRINT TO A FILE OCCUPANCY CODE /////////////////////
@@ -391,10 +398,20 @@ namespace pcl
                 PCL_INFO("Range Encoder Time:  %ld ms \n",duration);
 
                 tempos_test_2 = tempos_test_2 + duration.count();
+                tempo_test_addPointsFromInputCloud = tempo_test_addPointsFromInputCloud + duration_addPointsFromInputCloud.count();
+                tempo_test_setInputCloud = tempo_test_setInputCloud + duration_setInputCloud.count();
+
                 counter++;
                 if(counter==100){
                     counter=0;
+                    PCL_INFO(" ---------------- setInputCloud Time:  %ld ms ----------------------- \n",tempo_test_addPointsFromInputCloud/100);
+                    PCL_INFO(" ---------------- addPointsFromInputCloud Time:  %ld ms ------------- \n",tempo_test_addPointsFromInputCloud/100);
+                    PCL_INFO(" ---------------- Serialize Time:  %ld ms --------------------------- \n",tempo_test_serialize/100);
                     PCL_INFO(" ---------------- Range Encoder Time:  %ld ms ----------------------- \n",tempos_test_2/100);
+                    tempos_test_2 = 0;
+                    tempo_test_serialize = 0;
+                    tempo_test_addPointsFromInputCloud = 0;
+                    tempo_test_setInputCloud = 0;
                 }
 
                 // ------------------------------------------------------------------
