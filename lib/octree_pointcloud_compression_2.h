@@ -404,7 +404,7 @@ namespace pcl
                 counter++;
                 if(counter==100){
                     counter=0;
-                    PCL_INFO(" ---------------- setInputCloud Time:  %ld ms ----------------------- \n",tempo_test_addPointsFromInputCloud/100);
+                    PCL_INFO(" ---------------- setInputCloud Time:  %ld ms ----------------------- \n",tempo_test_setInputCloud/100);
                     PCL_INFO(" ---------------- addPointsFromInputCloud Time:  %ld ms ------------- \n",tempo_test_addPointsFromInputCloud/100);
                     PCL_INFO(" ---------------- Serialize Time:  %ld ms --------------------------- \n",tempo_test_serialize/100);
                     PCL_INFO(" ---------------- Range Encoder Time:  %ld ms ----------------------- \n",tempos_test_2/100);
