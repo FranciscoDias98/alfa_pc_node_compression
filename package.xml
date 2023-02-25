@@ -1,8 +1,8 @@
 <?xml version="1.0"?>
 <package>
-  <name>alfa_pc_compression</name>
+  <name>compression_node_mt</name>
   <version>0.0.0</version>
-  <description>alfa_pc_compression</description>
+  <description>compression_node_mt</description>
 
   <!-- One maintainer tag required, multiple allowed, one person per tag --> 
   <!-- Example:  -->

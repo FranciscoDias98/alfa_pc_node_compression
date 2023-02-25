@@ -2,9 +2,10 @@
 #include <thread>
 #include <unistd.h>
 #include <chrono>
+#include <cmath>
 
 pcl::PointCloud<pcl::PointXYZI>::Ptr cloud_test(new pcl::PointCloud<pcl::PointXYZI>);
-#define RES_MULTIPLIER 10
+#define RES_MULTIPLIER 100
 #define INTENSITY_MULTIPLIER 1000
 
 
@@ -71,11 +72,11 @@ void AlfaNode::cloud_cb(const sensor_msgs::PointCloud2ConstPtr &cloud)
         ROS_ERROR_STREAM("Error in converting ros cloud to pcl cloud: " << e.what());
     }
 
-    std::cout << "Recebi cloud" << std::endl;
+    std::cout << "Recebi cloud\n" << std::endl;
 
     std::cout << (static_cast<float> (pcloud->size()) * (sizeof (int) + 3.0f * sizeof (float)) / 1024.0f) << std::endl;
 
-
+    printf("Point Cloud Size: %d\n",pcloud->size());
 
    process_pointcloud(pcloud,cloud);
 
@@ -127,33 +128,26 @@ void AlfaNode::ticker_thread()
         newPing.node_name= NODE_NAME;
         newPing.node_type = NODE_TYPE;
         newPing.config_service_name = string(NODE_NAME)+"_settings";
-        newPing.config_tag = "DIOR software example";
+        newPing.config_tag = "ALFA-Pc example";
         alfa_msg::ConfigMessage parameter1,parameter2,parameter3,parameter4,parameter5,parameter6;
 
-        parameter1.config = 7;
-        parameter1.config_name = "Filter Selector";
+        parameter1.config = 0.03;
+        parameter1.config_name = "Resolution";
 
-        parameter2.config = 0.1;
-        parameter2.config_name = "Minimal Search Radius:";
+        parameter2.config = 0;
+        parameter2.config_name = "Multithreading";
 
-        parameter3.config = 0.2;
-        parameter3.config_name = "Multiplication Parameter:";
+        parameter3.config = 32;
+        parameter3.config_name = "Hw test - Number of points";
 
-        parameter4.config = 5;
-        parameter4.config_name = "Neighbor Threshold";
-
-        parameter5.config = 0.005;
-        parameter5.config_name = "Intensity Treshold Parameter:";
-
-        parameter6.config = 4;
-        parameter6.config_name = "Multithreading: Number of threads";
+        parameter4.config = 10;
+        parameter4.config_name = "Octreee Depth Hw";
 
         newPing.default_configurations.push_back(parameter1);
         newPing.default_configurations.push_back(parameter2);
         newPing.default_configurations.push_back(parameter3);
         newPing.default_configurations.push_back(parameter4);
-        newPing.default_configurations.push_back(parameter5);
-        newPing.default_configurations.push_back(parameter6);
+
 
         newPing.current_status = node_status;
         alive_publisher.publish(newPing);
@@ -190,7 +184,7 @@ void AlfaNode::spin()
 
 //   pcloud->header = cloud_test->header;
 
-void AlfaNode::store_pointcloud_hardware(pcl::PointCloud<pcl::PointXYZI>::Ptr input_cloud, u64 *pointer)
+void AlfaNode::store_pointcloud_hardware(pcl::PointCloud<pcl::PointXYZRGB>::Ptr input_cloud, u64 *pointer)
 {
     int pointcloud_index = 0;
     int16_t a16_points[4];
@@ -198,25 +192,72 @@ void AlfaNode::store_pointcloud_hardware(pcl::PointCloud<pcl::PointXYZI>::Ptr in
         a16_points[0] = point.x*RES_MULTIPLIER;
         a16_points[1] = point.y*RES_MULTIPLIER;
         a16_points[2] = point.z*RES_MULTIPLIER;
-        a16_points[3] = point.intensity*INTENSITY_MULTIPLIER;
+        a16_points[3] =0;//point.intensity*INTENSITY_MULTIPLIER;
         memcpy((void*)(pointer+pointcloud_index),a16_points,sizeof(int16_t)*4);
+        //printf("Point %d | (%d , %d , %d )\n",pointcloud_index,a16_points[0],a16_points[1],a16_points[2]);
         pointcloud_index++;
     }
 }
 
 
-pcl::PointCloud<pcl::PointXYZI>::Ptr AlfaNode::read_hardware_pointcloud(u64 *pointer, uint size)
+std::vector<char> AlfaNode::read_hardware_pointcloud(u64 *pointer, uint size)
 {
-    pcl::PointCloud<pcl::PointXYZI>::Ptr return_cloud;
-    return_cloud.reset(new pcl::PointCloud<pcl::PointXYZI>);
-    for (uint i=0; i<size;i++) {
-        pcl::PointXYZI p;
+    //pcl::PointCloud<pcl::PointXYZRGB>::Ptr return_cloud;
+    //return_cloud.reset(new pcl::PointCloud<pcl::PointXYZRGB>);
+    
+
+    std::vector<char> hw_occupancy_code;
+    uint32_t counter = 0;
+    float number_bits = 0;
+    int ddr_blocks = 0;
+    float blocks = 0;
+
+    number_bits = size*8;
+    blocks = number_bits/64.0;
+    ddr_blocks = ceil(blocks);
+
+    printf("DDR Bits to Read: %f\n",number_bits);
+    printf("DDR Blocks: %f\n",blocks);
+    printf("DDR Blocks to Read: %d\n",ddr_blocks);
+
+    for(int i=0;i<ddr_blocks;i++){
+        uint8_t a8_branchs[8];
+        memcpy((void*)(a8_branchs), pointer+i,sizeof(uint8_t)*8);
+        hw_occupancy_code.push_back(a8_branchs[7]);
+        hw_occupancy_code.push_back(a8_branchs[6]);
+        hw_occupancy_code.push_back(a8_branchs[5]);
+        hw_occupancy_code.push_back(a8_branchs[4]);
+        hw_occupancy_code.push_back(a8_branchs[3]);
+        hw_occupancy_code.push_back(a8_branchs[2]);
+        hw_occupancy_code.push_back(a8_branchs[1]);
+        hw_occupancy_code.push_back(a8_branchs[0]);
+          /* for(int j=7;j>=0;j--){
+            if(counter < size){
+                hw_occupancy_code.push_back(a8_branchs[j]);
+                counter++; 
+            }else{ 
+                break;
+            }
+        } */
+    }
+
+//    63                             0
+//    [4d][80][80][88][80][80][80][20]
+
+//    for(int i = 0;i<hw_occupancy_code.size();i++){
+//        printf("%x\n",hw_occupancy_code[i]);
+//    }
+
+    return hw_occupancy_code;
+
+    /* for (uint i=0; i<size;i++) {
+        pcl::PointXYZRGB p;
         int16_t a16_points[4];
         memcpy((void*)(a16_points), pointer+i,sizeof(int16_t)*4);
         p.x = (a16_points[0])/float(RES_MULTIPLIER);
         p.y = (a16_points[1])/float(RES_MULTIPLIER);
         p.z = (a16_points[2])/float(RES_MULTIPLIER);
-        p.intensity = (a16_points[3])/float(INTENSITY_MULTIPLIER);
+        //p.intensity = (a16_points[3])/float(INTENSITY_MULTIPLIER);
         return_cloud->push_back(p);
         #ifdef DEBUG
 
@@ -225,7 +266,7 @@ pcl::PointCloud<pcl::PointXYZI>::Ptr AlfaNode::read_hardware_pointcloud(u64 *poi
         #endif
 
     }
-    return return_cloud;
+    return return_cloud; */
 }
 
 vector<uint32_t> AlfaNode::read_hardware_registers(uint32_t *pointer, uint size)

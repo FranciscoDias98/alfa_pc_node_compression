@@ -4,7 +4,7 @@
 int main(int argc, char **argv)
 {
 
-     ros::init (argc, argv, "alfa_pc_compression_node");
+     ros::init (argc, argv, "compression_node_mt");
        if (!ros::master::check()) {
            cout <<"Failed to inicialize ros"<<endl;
        }

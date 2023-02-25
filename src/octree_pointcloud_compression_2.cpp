@@ -220,6 +220,7 @@ namespace pcl
     template<typename PointT, typename LeafT, typename BranchT, typename OctreeT> void
     OctreePointCloudCompression<PointT, LeafT, BranchT, OctreeT>::entropyEncoding (std::ostream& compressed_tree_data_out_arg)
     {
+      PCL_INFO ("*** OLA Enctropy Encoding ***\n");
       uint64_t binary_tree_data_vector_size;
       uint64_t point_avg_color_data_vector_size;
 
@@ -356,6 +357,13 @@ namespace pcl
         color_bit_depth  = color_coder_.getBitDepth ();
         point_resolution= point_coder_.getPrecision ();
         this->getBoundingBox (min_x, min_y, min_z, max_x, max_y, max_z);
+
+        printf("min_x: %d",min_x);
+        printf("min_y: %d",min_y);
+        printf("min_z: %d",min_z);
+        printf("max_x: %d",max_x);
+        printf("max_y: %d",max_y);
+        printf("max_z: %d",max_z);
 
         // encode amount of points
         if (do_voxel_grid_enDecoding_)
